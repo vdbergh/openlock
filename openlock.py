@@ -52,7 +52,7 @@ class OpenLock:
     def __remove_lock_file(self):
         try:
             os.remove(self.__lock_file)
-            logger.debug("Log file removed")
+            logger.debug("Lock file removed")
         except Exception:
             pass
 
