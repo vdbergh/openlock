@@ -3,6 +3,7 @@ import time
 
 from openlock import OpenLock
 
+logging.basicConfig()
 logger = logging.getLogger("openlock")
 logger.setLevel(logging.DEBUG)
 

@@ -5,9 +5,7 @@ import threading
 import time
 from pathlib import Path
 
-logging.basicConfig()
 logger = logging.getLogger("openlock")
-# logger.setLevel(logging.DEBUG)
 
 
 class Timeout(Exception):
