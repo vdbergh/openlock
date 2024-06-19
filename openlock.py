@@ -94,6 +94,9 @@ class OpenLock:
 
     def release(self):
         with self.__lock:
+            if not self.__acquired:
+                logger.warning("Ignored attempt to release a lock we do not own")
+                return
             self.__acquired = False
             self.__remove_lock_file()
             atexit.unregister(self.__remove_lock_file)
