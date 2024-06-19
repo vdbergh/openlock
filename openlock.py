@@ -8,8 +8,13 @@ from pathlib import Path
 logger = logging.getLogger("openlock")
 
 
-class Timeout(Exception):
+class OpenLockException(Exception):
     pass
+
+
+class Timeout(OpenLockException):
+    pass
+
 
 # These deal with stale lock file detection
 _touch_period = 2.0
@@ -42,9 +47,11 @@ class OpenLock:
             return False
         try:
             atime = os.path.getatime(self.__lock_file)
-        except OSError:
-            logger.exception(f"Unable to get the access time of the lock file {self.__lock_file}")
-            raise
+        except OSError as e:
+            logger.error(
+                f"Unable to get the access time of the lock file {self.__lock_file}: {str(e)}"
+            )
+            return False
         if atime < time.time() - _stale_detect:
             return True
         return False
