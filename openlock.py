@@ -11,7 +11,6 @@ logger = logging.getLogger("openlock")
 class Timeout(Exception):
     pass
 
-
 # These deal with stale lock file detection
 _touch_period = 2.0
 _stale_detect = 7.0
@@ -39,10 +38,13 @@ class OpenLock:
             time.sleep(_touch_period)
 
     def __is_stale(self):
+        if not self.__lock_file.exists():
+            return False
         try:
             atime = os.path.getatime(self.__lock_file)
-        except Exception:
-            return False
+        except OSError:
+            logger.exception(f"Unable to get the access time of the lock file {self.__lock_file}")
+            raise
         if atime < time.time() - _stale_detect:
             return True
         return False
@@ -51,7 +53,7 @@ class OpenLock:
         try:
             os.remove(self.__lock_file)
             logger.debug("Lock file removed")
-        except Exception:
+        except OSError:
             pass
 
     def acquire(self, detect_stale=None, timeout=None):
@@ -65,9 +67,8 @@ class OpenLock:
                 if detect_stale:
                     if self.__is_stale():
                         logger.debug("Removing stale lock file")
-                        os.remove(self.__lock_file)
+                        self.__remove_lock_file()
                         time.sleep(_stale_delay)
-
                 try:
                     fd = os.open(
                         self.__lock_file, mode=0o644, flags=os.O_CREAT | os.O_EXCL
@@ -77,7 +78,7 @@ class OpenLock:
                     logger.debug("Lock acquired")
                     self.__acquired = True
                     break
-                except Exception:
+                except OSError:
                     if timeout is not None and wait_time >= timeout:
                         raise Timeout("Unable to acquire lock") from None
                     else:
