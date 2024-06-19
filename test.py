@@ -10,4 +10,4 @@ logger.setLevel(logging.DEBUG)
 if __name__ == "__main__":
     with OpenLock("test.lock", detect_stale=True, timeout=0):
         print("Sleeping 20 seconds")
-        time.sleep(10)
+        time.sleep(20)
