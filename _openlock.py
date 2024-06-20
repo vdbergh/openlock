@@ -36,10 +36,11 @@ class OpenLock:
         logger.debug(f"{self} created")
 
     def __touch(self):
-        if self.__acquired:
-            self.__lock_file.touch()
-            self.__timer = threading.Timer(_touch_period, self.__touch)
-            self.__timer.start()
+        self.__lock_file.touch()
+        self.__timer = threading.Timer(_touch_period, self.__touch)
+        self.__timer.start()
+        if not self.__acquired:
+            self.__timer.cancel()
 
     def __is_stale(self):
         if not self.__lock_file.exists():
