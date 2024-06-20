@@ -46,14 +46,14 @@ class OpenLock:
         if not self.__lock_file.exists():
             return False
         try:
-            atime = os.path.getatime(self.__lock_file)
+            mtime = os.path.getmtime(self.__lock_file)
         except OSError as e:
             logger.error(
                 "Unable to get the access time of the lock file "
                 f"{self.__lock_file}: {str(e)}"
             )
             return False
-        if atime < time.time() - _stale_detect:
+        if mtime < time.time() - _stale_detect:
             return True
         return False
 
