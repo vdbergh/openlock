@@ -8,11 +8,11 @@ from pathlib import Path
 logger = logging.getLogger("openlock")
 
 
-class FileLockException(Exception):
+class OpenLockException(Exception):
     pass
 
 
-class Timeout(FileLockException):
+class Timeout(OpenLockException):
     pass
 
 
