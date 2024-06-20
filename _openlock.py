@@ -106,6 +106,9 @@ class OpenLock:
             atexit.unregister(self.__remove_lock_file)
             logger.debug("Lock released")
 
+    def locked(self):
+        return self.__acquired
+
     def __enter__(self):
         self.acquire()
         return self

@@ -15,6 +15,8 @@ if __name__ == "__main__":
     try:
         with OpenLock("test.lock", detect_stale=True, timeout=0) as L:
 
+            assert L.locked()
+
             def cleanup(signum, frame):
                 L.release()
                 sys.exit()
@@ -25,3 +27,5 @@ if __name__ == "__main__":
             time.sleep(20)
     except Timeout:
         pass
+
+    assert not L.locked()
