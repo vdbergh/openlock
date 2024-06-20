@@ -103,7 +103,7 @@ class OpenLock:
         with self.__lock:
             if not self.__acquired:
                 logger.debug(
-                    "Ignoring attempt at releasing lock {self} which we do not own"
+                    f"Ignoring attempt at releasing {self} which we do not own"
                 )
                 return
             self.__acquired = False
