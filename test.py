@@ -3,7 +3,9 @@ import signal
 import sys
 import time
 
-from openlock import OpenLock, Timeout
+# Replace _openlock by openlock if the package
+# has been properly installed.
+from _openlock import OpenLock, Timeout
 
 logging.basicConfig(format="%(asctime)s:%(levelname)s:%(name)s:%(process)s:%(message)s")
 logger = logging.getLogger("openlock")

@@ -86,13 +86,15 @@ class OpenLock:
                     logger.debug("Lock acquired")
                     self.__acquired = True
                     break
-                except OSError:
-                    if timeout is not None and wait_time >= timeout:
-                        logger.debug("Unable to acquire lock")
-                        raise Timeout("Unable to acquire lock") from None
-                    else:
-                        wait_time += _repeat_delay
-                        time.sleep(_repeat_delay)
+                except FileExistsError:
+                    pass
+
+                if timeout is not None and wait_time >= timeout:
+                    logger.debug("Unable to acquire lock")
+                    raise Timeout("Unable to acquire lock") from None
+                else:
+                    wait_time += _repeat_delay
+                    time.sleep(_repeat_delay)
 
     def release(self):
         with self.__lock:
