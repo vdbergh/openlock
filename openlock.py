@@ -88,6 +88,7 @@ class OpenLock:
                     break
                 except OSError:
                     if timeout is not None and wait_time >= timeout:
+                        logger.debug("Unable to acquire lock")
                         raise Timeout("Unable to acquire lock") from None
                     else:
                         wait_time += _repeat_delay
