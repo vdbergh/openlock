@@ -32,15 +32,14 @@ class OpenLock:
         self.__detect_stale = detect_stale
         self.__lock = threading.Lock()
         self.__acquired = False
-        self.__repeat_touch = threading.Thread(target=self.__touch, daemon=True)
-        self.__repeat_touch.start()
+        self.__timer = None
         logger.debug(f"{self} created")
 
     def __touch(self):
-        while True:
-            if self.__acquired:
-                self.__lock_file.touch()
-            time.sleep(_touch_period)
+        if self.__acquired:
+            self.__lock_file.touch()
+            self.__timer = threading.Timer(_touch_period, self.__touch)
+            self.__timer.start()
 
     def __is_stale(self):
         if not self.__lock_file.exists():
@@ -88,6 +87,7 @@ class OpenLock:
                     atexit.register(self.__remove_lock_file)
                     logger.debug(f"{self} acquired")
                     self.__acquired = True
+                    self.__touch()
                     break
                 except FileExistsError:
                     pass
@@ -107,6 +107,7 @@ class OpenLock:
                 )
                 return
             self.__acquired = False
+            self.__timer.cancel()
             self.__remove_lock_file()
             atexit.unregister(self.__remove_lock_file)
             logger.debug(f"{self} released")
