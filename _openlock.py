@@ -116,6 +116,8 @@ class OpenLock:
             return self.__acquired
 
     def getpid(self):
+        if self.__is_stale():
+            return None
         try:
             with open(self.__lock_file) as f:
                 return int(f.read())
