@@ -107,7 +107,8 @@ class OpenLock:
             logger.debug("Lock released")
 
     def locked(self):
-        return self.__acquired
+        with self.__lock:
+            return self.__acquired
 
     def __enter__(self):
         self.acquire()
