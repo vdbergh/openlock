@@ -14,6 +14,7 @@ logger.setLevel(logging.DEBUG)
 if __name__ == "__main__":
     try:
         with OpenLock("test.lock", detect_stale=True, timeout=0) as L:
+            logger.debug(f"Locked by PID={L.getpid()}")
 
             assert L.locked()
 

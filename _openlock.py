@@ -79,8 +79,11 @@ class OpenLock:
                         time.sleep(_stale_delay)
                 try:
                     fd = os.open(
-                        self.__lock_file, mode=0o644, flags=os.O_CREAT | os.O_EXCL
+                        self.__lock_file,
+                        mode=0o644,
+                        flags=os.O_WRONLY | os.O_CREAT | os.O_EXCL,
                     )
+                    os.write(fd, str(os.getpid()).encode())
                     os.close(fd)
                     atexit.register(self.__remove_lock_file)
                     logger.debug("Lock acquired")
@@ -109,6 +112,13 @@ class OpenLock:
     def locked(self):
         with self.__lock:
             return self.__acquired
+
+    def getpid(self):
+        try:
+            with open(self.__lock_file) as f:
+                return int(f.read())
+        except Exception:
+            return None
 
     def __enter__(self):
         self.acquire()
