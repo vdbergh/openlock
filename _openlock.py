@@ -34,7 +34,7 @@ class OpenLock:
         self.__acquired = False
         self.__repeat_touch = threading.Thread(target=self.__touch, daemon=True)
         self.__repeat_touch.start()
-        logger.debug("Lock created")
+        logger.debug(f"{self} created")
 
     def __touch(self):
         while True:
@@ -60,7 +60,7 @@ class OpenLock:
     def __remove_lock_file(self):
         try:
             os.remove(self.__lock_file)
-            logger.debug("Lock file removed")
+            logger.debug(f"Lock file '{self.__lock_file}' removed")
         except OSError:
             pass
 
@@ -74,7 +74,7 @@ class OpenLock:
             while True:
                 if detect_stale:
                     if self.__is_stale():
-                        logger.debug("Removing stale lock file")
+                        logger.debug(f"Removing stale lock file '{self.__lock_file}'")
                         self.__remove_lock_file()
                         time.sleep(_stale_delay)
                 try:
@@ -86,15 +86,15 @@ class OpenLock:
                     os.write(fd, str(os.getpid()).encode())
                     os.close(fd)
                     atexit.register(self.__remove_lock_file)
-                    logger.debug("Lock acquired")
+                    logger.debug(f"{self} acquired")
                     self.__acquired = True
                     break
                 except FileExistsError:
                     pass
 
                 if timeout is not None and wait_time >= timeout:
-                    logger.debug("Unable to acquire lock")
-                    raise Timeout("Unable to acquire lock") from None
+                    logger.debug(f"Unable to acquire {self}")
+                    raise Timeout(f"Unable to acquire {self}") from None
                 else:
                     wait_time += _repeat_delay
                     time.sleep(_repeat_delay)
@@ -102,12 +102,14 @@ class OpenLock:
     def release(self):
         with self.__lock:
             if not self.__acquired:
-                logger.debug("Ignoring attempt at releasing a lock we do not own")
+                logger.debug(
+                    "Ignoring attempt at releasing lock {self} which we do not own"
+                )
                 return
             self.__acquired = False
             self.__remove_lock_file()
             atexit.unregister(self.__remove_lock_file)
-            logger.debug("Lock released")
+            logger.debug(f"{self} released")
 
     def locked(self):
         with self.__lock:
@@ -126,3 +128,8 @@ class OpenLock:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.release()
+
+    def __str__(self):
+        return f"OpenLock('{self.__lock_file}')"
+
+    __repr__ = __str__
