@@ -48,7 +48,7 @@ class OpenLock:
             mtime = os.path.getmtime(self.__lock_file)
         except OSError as e:
             logger.error(
-                "Unable to get the access time of the lock file "
+                "Unable to get the modification time of the lock file "
                 f"{self.__lock_file}: {str(e)}"
             )
             return False
@@ -107,7 +107,8 @@ class OpenLock:
                 )
                 return
             self.__acquired = False
-            self.__timer.cancel()
+            if self.__timer is not None:
+                self.__timer.cancel()
             self.__remove_lock_file()
             atexit.unregister(self.__remove_lock_file)
             logger.debug(f"{self} released")
