@@ -18,7 +18,7 @@ class Timeout(OpenLockException):
 
 # These deal with stale lock file detection
 _touch_period = 2.0
-_stale_detect = 7.0
+_stale_detect = 3.0
 _stale_delay = 0.5
 
 # These deal with acquiring locks
