@@ -97,7 +97,7 @@ class OpenLock:
     def release(self):
         with self.__lock:
             if not self.__acquired:
-                logger.warning("Ignored attempt to release a lock we do not own")
+                logger.debug("Ignoring attempt at releasing a lock we do not own")
                 return
             self.__acquired = False
             self.__remove_lock_file()
@@ -106,6 +106,7 @@ class OpenLock:
 
     def __enter__(self):
         self.acquire()
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.release()
