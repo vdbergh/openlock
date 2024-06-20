@@ -8,11 +8,11 @@ from pathlib import Path
 logger = logging.getLogger("openlock")
 
 
-class OpenLockException(Exception):
+class FileLockException(Exception):
     pass
 
 
-class Timeout(OpenLockException):
+class Timeout(FileLockException):
     pass
 
 
@@ -25,7 +25,7 @@ _stale_delay = 0.5
 _repeat_delay = 0.3
 
 
-class OpenLock:
+class FileLock:
     def __init__(self, lock_file, detect_stale=False, timeout=None):
         self.__lock_file = Path(lock_file)
         self.__timeout = timeout
@@ -135,6 +135,6 @@ class OpenLock:
         self.release()
 
     def __str__(self):
-        return f"OpenLock('{self.__lock_file}')"
+        return f"FileLock('{self.__lock_file}')"
 
     __repr__ = __str__

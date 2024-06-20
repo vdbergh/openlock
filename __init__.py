@@ -1,1 +1,1 @@
-from ._openlock import OpenLock, Timeout
+from ._openlock import FileLock, Timeout
