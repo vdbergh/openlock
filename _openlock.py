@@ -38,6 +38,7 @@ class FileLock:
     def __touch(self):
         self.__lock_file.touch()
         self.__timer = threading.Timer(_touch_period, self.__touch)
+        self.__timer.daemon = True
         self.__timer.start()
         if not self.__acquired:
             self.__timer.cancel()
