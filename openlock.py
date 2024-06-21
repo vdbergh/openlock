@@ -5,7 +5,7 @@ import threading
 import time
 from pathlib import Path
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,9 @@ _retry_period_default = 0.3
 
 
 class FileLock:
+
+    __lock_files = set()
+
     def __init__(
         self,
         lock_file,
@@ -39,6 +42,11 @@ class FileLock:
         _stale_race_delay=_stale_race_delay_default,
     ):
         self.__lock_file = Path(lock_file)
+        if self.__lock_file in self.__lock_files:
+            logger.debug(f"Lock file '{self.__lock_file}' is already in use")
+            raise OpenLockException(
+                f"Lock file '{self.__lock_file}' is already in use."
+            )
         self.__timeout = timeout
         self.__detect_stale = detect_stale
         self.__lock = threading.Lock()
@@ -48,6 +56,7 @@ class FileLock:
         self.__touch_period = _touch_period
         self.__stale_timeout = _stale_timeout
         self.__stale_race_delay = _stale_race_delay
+        self.__lock_files.add(self.__lock_file)
         logger.debug(f"{self} created")
 
     def __touch(self):
