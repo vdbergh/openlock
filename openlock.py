@@ -59,10 +59,10 @@ class FileLock:
             self.__timer.cancel()
 
     def __is_stale(self):
-        if not self.__lock_file.exists():
-            return False
         try:
             mtime = os.path.getmtime(self.__lock_file)
+        except FileNotFoundError:
+            return False
         except OSError as e:
             logger.error(
                 "Unable to get the modification time of the lock file "
