@@ -29,7 +29,15 @@ _retry_period_default = 0.3
 
 class FileLock:
 
-    __lock_files = set()
+    __locks = {}
+
+    def __new__(cls, lock_file, *args, **kwargs):
+        lock_file = Path(lock_file)
+        if lock_file in cls.__locks:
+            lock = cls.__locks[lock_file]
+            return lock
+        else:
+            return super().__new__(cls)
 
     def __init__(
         self,
@@ -42,11 +50,6 @@ class FileLock:
         _stale_race_delay=_stale_race_delay_default,
     ):
         self.__lock_file = Path(lock_file)
-        if self.__lock_file in self.__lock_files:
-            logger.debug(f"Lock file '{self.__lock_file}' is already in use")
-            raise OpenLockException(
-                f"Lock file '{self.__lock_file}' is already in use."
-            )
         self.__timeout = timeout
         self.__detect_stale = detect_stale
         self.__lock = threading.Lock()
@@ -56,7 +59,7 @@ class FileLock:
         self.__touch_period = _touch_period
         self.__stale_timeout = _stale_timeout
         self.__stale_race_delay = _stale_race_delay
-        self.__lock_files.add(self.__lock_file)
+        self.__locks[self.__lock_file] = self
         logger.debug(f"{self} created")
 
     def __touch(self):
