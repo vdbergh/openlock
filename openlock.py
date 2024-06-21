@@ -18,26 +18,39 @@ class Timeout(OpenLockException):
 
 # These deal with stale lock file detection
 _touch_period = 2.0
-_stale_detect = 3.0
-_stale_delay = 0.5
+_stale_timeout = 3.0
+_stale_race_delay = 0.5
 
-# These deal with acquiring locks
-_repeat_delay = 0.3
+# This deals with acquiring locks
+_retry_delay = 0.3
 
 
 class FileLock:
-    def __init__(self, lock_file, detect_stale=False, timeout=None):
+    def __init__(
+        self,
+        lock_file,
+        detect_stale=False,
+        timeout=None,
+        _retry_delay=_retry_delay,
+        _touch_period=_touch_period,
+        _stale_timeout=_stale_timeout,
+        _stale_race_delay=_stale_race_delay,
+    ):
         self.__lock_file = Path(lock_file)
         self.__timeout = timeout
         self.__detect_stale = detect_stale
         self.__lock = threading.Lock()
         self.__acquired = False
         self.__timer = None
+        self.__retry_delay = _retry_delay
+        self.__touch_period = _touch_period
+        self.__stale_timeout = _stale_timeout
+        self.__stale_race_delay = _stale_race_delay
         logger.debug(f"{self} created")
 
     def __touch(self):
         self.__lock_file.touch()
-        self.__timer = threading.Timer(_touch_period, self.__touch)
+        self.__timer = threading.Timer(self.__touch_period, self.__touch)
         self.__timer.daemon = True
         self.__timer.start()
         if not self.__acquired:
@@ -54,7 +67,7 @@ class FileLock:
                 f"{self.__lock_file}: {str(e)}"
             )
             return False
-        if mtime < time.time() - _stale_detect:
+        if mtime < time.time() - self.__stale_timeout:
             return True
         return False
 
@@ -77,7 +90,7 @@ class FileLock:
                     if self.__is_stale():
                         logger.debug(f"Removing stale lock file '{self.__lock_file}'")
                         self.__remove_lock_file()
-                        time.sleep(_stale_delay)
+                        time.sleep(self.__stale_race_delay)
                 try:
                     fd = os.open(
                         self.__lock_file,
@@ -98,8 +111,8 @@ class FileLock:
                     logger.debug(f"Unable to acquire {self}")
                     raise Timeout(f"Unable to acquire {self}") from None
                 else:
-                    wait_time += _repeat_delay
-                    time.sleep(_repeat_delay)
+                    wait_time += self.__retry_delay
+                    time.sleep(self.__retry_delay)
 
     def release(self):
         with self.__lock:
