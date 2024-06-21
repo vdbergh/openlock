@@ -5,7 +5,7 @@ import threading
 import time
 from pathlib import Path
 
-logger = logging.getLogger("openlock")
+logger = logging.getLogger(__name__)
 
 
 class OpenLockException(Exception):
