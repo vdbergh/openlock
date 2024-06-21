@@ -35,6 +35,7 @@ class FileLock:
         lock_file = Path(lock_file)
         if lock_file in cls.__locks:
             lock = cls.__locks[lock_file]
+            logger.debug(f"Returning existing {lock}")
             return lock
         else:
             return super().__new__(cls)
@@ -50,6 +51,8 @@ class FileLock:
         _stale_race_delay=_stale_race_delay_default,
     ):
         self.__lock_file = Path(lock_file)
+        if self.__lock_file in self.__locks:
+            return
         self.__timeout = timeout
         self.__detect_stale = detect_stale
         self.__lock = threading.Lock()
