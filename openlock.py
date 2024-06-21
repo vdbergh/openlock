@@ -17,12 +17,12 @@ class Timeout(OpenLockException):
 
 
 # These deal with stale lock file detection
-_touch_period = 2.0
-_stale_timeout = 3.0
-_stale_race_delay = 0.5
+_touch_period_default = 2.0
+_stale_timeout_default = 3.0
+_stale_race_delay_default = 0.5
 
 # This deals with acquiring locks
-_retry_delay = 0.3
+_retry_period_default = 0.3
 
 
 class FileLock:
@@ -31,10 +31,10 @@ class FileLock:
         lock_file,
         detect_stale=False,
         timeout=None,
-        _retry_delay=_retry_delay,
-        _touch_period=_touch_period,
-        _stale_timeout=_stale_timeout,
-        _stale_race_delay=_stale_race_delay,
+        _retry_period=_retry_period_default,
+        _touch_period=_touch_period_default,
+        _stale_timeout=_stale_timeout_default,
+        _stale_race_delay=_stale_race_delay_default,
     ):
         self.__lock_file = Path(lock_file)
         self.__timeout = timeout
@@ -42,7 +42,7 @@ class FileLock:
         self.__lock = threading.Lock()
         self.__acquired = False
         self.__timer = None
-        self.__retry_delay = _retry_delay
+        self.__retry_period = _retry_period
         self.__touch_period = _touch_period
         self.__stale_timeout = _stale_timeout
         self.__stale_race_delay = _stale_race_delay
@@ -111,8 +111,8 @@ class FileLock:
                     logger.debug(f"Unable to acquire {self}")
                     raise Timeout(f"Unable to acquire {self}") from None
                 else:
-                    wait_time += self.__retry_delay
-                    time.sleep(self.__retry_delay)
+                    wait_time += self.__retry_period
+                    time.sleep(self.__retry_period)
 
     def release(self):
         with self.__lock:
