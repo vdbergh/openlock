@@ -120,13 +120,16 @@ class FileLock:
             return self.__acquired
 
     def getpid(self):
-        if self.__is_stale():
-            return None
-        try:
-            with open(self.__lock_file) as f:
-                return int(f.read())
-        except Exception:
-            return None
+        with self.__lock:
+            if self.__acquired:
+                return os.getpid()
+            if self.__is_stale():
+                return None
+            try:
+                with open(self.__lock_file) as f:
+                    return int(f.read())
+            except Exception:
+                return None
 
     def __enter__(self):
         self.acquire()
