@@ -91,13 +91,8 @@ class FileLock:
         while True:
             if lock_state["state"] == "locked":
                 return
-            fd = os.open(
-                self.__lock_file,
-                mode=0o644,
-                flags=os.O_WRONLY | os.O_CREAT,
-            )
-            os.write(fd, str(os.getpid()).encode())
-            os.close(fd)
+            with open(self.__lock_file, "w") as f:
+                f.write(str(os.getpid()))
             time.sleep(self.__stale_race_delay)
             lock_state = self.__lock_state()
             logger.debug(f"{self}: {lock_state}")
