@@ -11,7 +11,7 @@ logger.setLevel(logging.DEBUG)
 
 if __name__ == "__main__":
     try:
-        with FileLock("test.lock", detect_stale=True, timeout=0) as L:
+        with FileLock("test.lock", timeout=0) as L:
             logger.debug(f"{L} locked by PID={L.getpid()}")
 
             assert L.locked()
@@ -24,5 +24,5 @@ if __name__ == "__main__":
             signal.signal(signal.SIGINT, cleanup)
             logger.info("Sleeping 20 seconds")
             time.sleep(20)
-    except Timeout:
-        pass
+    except Timeout as e:
+        logger.debug(e)

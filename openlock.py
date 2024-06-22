@@ -31,7 +31,6 @@ class FileLock:
     def __init__(
         self,
         lock_file,
-        detect_stale=False,
         timeout=None,
         _retry_period=_retry_period_default,
         _touch_period=_touch_period_default,
@@ -40,7 +39,6 @@ class FileLock:
     ):
         self.__lock_file = Path(lock_file)
         self.__timeout = timeout
-        self.__detect_stale = detect_stale
         self.__lock = threading.Lock()
         self.__acquired = False
         self.__timer = None
@@ -58,20 +56,31 @@ class FileLock:
         if not self.__acquired:
             self.__timer.cancel()
 
-    def __is_stale(self):
+    def __lock_state(self):
         try:
-            mtime = os.path.getmtime(self.__lock_file)
+            fd = os.open(self.__lock_file, mode=0o444, flags=os.O_RDONLY)
+            st = os.stat(fd)
+            if st.st_mtime < time.time() - self.__stale_timeout:
+                os.close(fd)
+                logger.debug(f"__lock_state: stale lock file '{self.__lock_file}'")
+                return {"state": "unlocked"}
+            s = os.read(fd, st.st_size)
+            os.close(fd)
         except FileNotFoundError:
-            return False
+            return {"state": "unlocked"}
         except OSError as e:
-            logger.error(
-                "Unable to get the modification time of the lock file "
-                f"{self.__lock_file}: {str(e)}"
+            logger.debug(
+                f"__lock_state: Error accessing '{self.__lock_file}': {str(e)}"
             )
-            return False
-        if mtime < time.time() - self.__stale_timeout:
-            return True
-        return False
+            raise
+        try:
+            pid = int(s)
+        except Exception as e:  # ValueError?
+            logger.debug(
+                f"__lock_state: Invalid lock file content: {s} (error: {str(e)})"
+            )
+            return {"state": "invalid"}
+        return {"state": "locked", "pid": pid}
 
     def __remove_lock_file(self):
         try:
@@ -80,41 +89,44 @@ class FileLock:
         except OSError:
             pass
 
-    def acquire(self, detect_stale=None, timeout=None):
-        with self.__lock:
-            if timeout is None:
-                timeout = self.__timeout
-            if detect_stale is None:
-                detect_stale = self.__detect_stale
-            wait_time = 0
-            while True:
-                if detect_stale:
-                    if self.__is_stale():
-                        logger.debug(f"Removing stale lock file '{self.__lock_file}'")
-                        self.__remove_lock_file()
-                        time.sleep(self.__stale_race_delay)
-                try:
-                    fd = os.open(
-                        self.__lock_file,
-                        mode=0o644,
-                        flags=os.O_WRONLY | os.O_CREAT | os.O_EXCL,
-                    )
-                    os.write(fd, str(os.getpid()).encode())
-                    os.close(fd)
-                    atexit.register(self.__remove_lock_file)
+    def __acquire_once(self):
+        lock_state = self.__lock_state()
+        while True:
+            if lock_state["state"] == "locked":
+                return
+            fd = os.open(
+                self.__lock_file,
+                mode=0o644,
+                flags=os.O_WRONLY | os.O_CREAT,
+            )
+            os.write(fd, str(os.getpid()).encode())
+            os.close(fd)
+            time.sleep(self.__stale_race_delay)
+            lock_state = self.__lock_state()
+            if lock_state["state"] == "locked":
+                if lock_state["pid"] == os.getpid():
                     logger.debug(f"{self} acquired")
                     self.__acquired = True
                     self.__touch()
+                    atexit.register(self.__remove_lock_file)
                     break
-                except FileExistsError:
-                    pass
-
-                if timeout is not None and wait_time >= timeout:
-                    logger.debug(f"Unable to acquire {self}")
-                    raise Timeout(f"Unable to acquire {self}") from None
                 else:
-                    wait_time += self.__retry_period
-                    time.sleep(self.__retry_period)
+                    return
+
+    def acquire(self, timeout=None):
+        if timeout is None:
+            timeout = self.__timeout
+        start_time = time.time()
+        with self.__lock:
+            while True:
+                if not self.__acquired:
+                    self.__acquire_once()
+                    if self.__acquired:
+                        break
+                now = time.time()
+                if timeout is not None and now - start_time >= timeout:
+                    raise Timeout(f"Unable to acquire {self}")
+                time.sleep(self.__retry_period)
 
     def release(self):
         with self.__lock:
@@ -132,18 +144,16 @@ class FileLock:
 
     def locked(self):
         with self.__lock:
-            return self.__acquired
+            return self.__lock_state()["state"] == "locked"
 
     def getpid(self):
         with self.__lock:
             if self.__acquired:
                 return os.getpid()
-            if self.__is_stale():
-                return None
-            try:
-                with open(self.__lock_file) as f:
-                    return int(f.read())
-            except Exception:
+            lock_state = self.__lock_state()
+            if lock_state["state"] == "locked":
+                return lock_state["pid"]
+            else:
                 return None
 
     def __enter__(self):
