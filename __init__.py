@@ -1,1 +1,1 @@
-from .openlock import FileLock, OpenLockException, Timeout
+from .openlock import FileLock, InvalidRelease, OpenLockException, Timeout
