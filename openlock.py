@@ -74,7 +74,7 @@ class FileLock:
             raise
         try:
             pid = int(s)
-        except ValueError as e:
+        except ValueError:
             return {"state": "invalid"}
         return {"state": "locked", "pid": pid}
 
