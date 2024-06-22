@@ -18,6 +18,10 @@ class Timeout(OpenLockException):
     pass
 
 
+class InvalidRelease(OpenLockException):
+    pass
+
+
 # These deal with stale lock file detection
 _touch_period_default = 2.0
 _stale_timeout_default = 3.0
@@ -124,10 +128,7 @@ class FileLock:
     def release(self):
         with self.__lock:
             if not self.__acquired:
-                logger.debug(
-                    f"Ignoring attempt at releasing {self} which we do not own"
-                )
-                return
+                raise InvalidRelease(f"Attempt at releasing {self} which we do not own")
             self.__acquired = False
             if self.__timer is not None:
                 self.__timer.cancel()
