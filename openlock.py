@@ -62,23 +62,19 @@ class FileLock:
             st = os.stat(fd)
             if st.st_mtime < time.time() - self.__stale_timeout:
                 os.close(fd)
-                logger.debug(f"__lock_state: stale lock file '{self.__lock_file}'")
                 return {"state": "unlocked"}
             s = os.read(fd, st.st_size)
             os.close(fd)
         except FileNotFoundError:
             return {"state": "unlocked"}
         except OSError as e:
-            logger.debug(
+            logger.error(
                 f"__lock_state: Error accessing '{self.__lock_file}': {str(e)}"
             )
             raise
         try:
             pid = int(s)
-        except Exception as e:  # ValueError?
-            logger.debug(
-                f"__lock_state: Invalid lock file content: {s} (error: {str(e)})"
-            )
+        except ValueError as e:
             return {"state": "invalid"}
         return {"state": "locked", "pid": pid}
 
@@ -91,6 +87,7 @@ class FileLock:
 
     def __acquire_once(self):
         lock_state = self.__lock_state()
+        logger.debug(f"{self}: {lock_state}")
         while True:
             if lock_state["state"] == "locked":
                 return
@@ -103,6 +100,7 @@ class FileLock:
             os.close(fd)
             time.sleep(self.__stale_race_delay)
             lock_state = self.__lock_state()
+            logger.debug(f"{self}: {lock_state}")
             if lock_state["state"] == "locked":
                 if lock_state["pid"] == os.getpid():
                     logger.debug(f"{self} acquired")
