@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 import os
 import time
 import unittest
@@ -6,6 +7,7 @@ import unittest
 from openlock import FileLock, InvalidRelease, Timeout
 
 lock_file = "test.lock"
+other_lock_file = "test1.lock"
 
 
 def show(mc):
@@ -16,18 +18,21 @@ def show(mc):
 class TestOpenLock(unittest.TestCase):
     def setUp(self):
         logging.disable(logging.DEBUG)
-        try:
-            os.remove(lock_file)
-        except OSError:
-            pass
+        for L in (lock_file, other_lock_file):
+            try:
+                os.remove(L)
+            except OSError:
+                pass
 
     def test_acquire_release(self):
         r = FileLock(lock_file)
         self.assertFalse(r.locked())
         r.acquire()
+        self.assertTrue(os.path.exists(lock_file))
         self.assertTrue(r.locked())
         self.assertTrue(r.getpid() == os.getpid())
         r.release()
+        self.assertFalse(os.path.exists(lock_file))
         self.assertFalse(r.locked())
 
     def test_double_acquire(self):
@@ -55,7 +60,12 @@ class TestOpenLock(unittest.TestCase):
         r.acquire()
         r.release()
         with open(lock_file, "w") as f:
-            f.write("123\ndummy.py\n")
+            f.write(f"{os.getpid()}\ndummy.py\n")
+        r.acquire()
+        self.assertTrue(os.getpid() == r.getpid())
+        r.release()
+        with open(lock_file, "w") as f:
+            f.write(f"123\ntest_openlock.py\n")
         r.acquire()
         self.assertTrue(os.getpid() == r.getpid())
         r.release()
@@ -68,6 +78,50 @@ class TestOpenLock(unittest.TestCase):
             r.acquire(timeout=2)
         show(mc)
         self.assertTrue(time.time() - t >= 2)
+
+    def test_different_lock_files(self):
+        r = FileLock(lock_file)
+        s = FileLock(other_lock_file)
+        r.acquire()
+        s.acquire()
+        self.assertTrue(r.locked())
+        self.assertTrue(s.locked())
+
+    def test_second_process(self):
+        r = FileLock(lock_file)
+        r.acquire()
+        reply = multiprocessing.Value("d", 0)
+
+        def other_process1(lock_file, reply):
+            r = FileLock(lock_file)
+            try:
+                r.acquire(timeout=0)
+            except Timeout:
+                reply.value = 1
+
+        p = multiprocessing.Process(target=other_process1, args=(lock_file, reply))
+        p.start()
+        p.join()
+        self.assertTrue(reply.value == 1)
+
+        r.release()
+
+        def other_process2(lock_file, reply):
+            r = FileLock(lock_file)
+            r.acquire(timeout=0)
+            time.sleep(2)
+            reply.value = 2
+
+        p = multiprocessing.Process(target=other_process2, args=(lock_file, reply))
+        p.start()
+        time.sleep(1)
+        with self.assertRaises(Timeout) as mc:
+            r.acquire(timeout=0)
+        show(mc)
+        p.join()
+        self.assertTrue(reply.value == 2)
+        r.acquire()
+
 
 
 if __name__ == "__main__":
