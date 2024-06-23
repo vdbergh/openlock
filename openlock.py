@@ -4,6 +4,7 @@ import os
 import platform
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -104,14 +105,21 @@ class FileLock:
         except OSError:
             pass
 
+    def __write_lock_file(self, pid, name):
+        temp_file = tempfile.NamedTemporaryFile(
+            dir=os.path.dirname(self.__lock_file), delete=False
+        )
+        temp_file.write(f"{os.getpid()}\n{sys.argv[0]}\n".encode())
+        temp_file.close()
+        os.replace(temp_file.name, self.__lock_file)
+
     def __acquire_once(self):
         lock_state = self.__lock_state()
         logger.debug(f"{self}: {lock_state}")
         while True:
             if lock_state["state"] == "locked":
                 return
-            with open(self.__lock_file, "w") as f:
-                f.write(f"{os.getpid()}\n{sys.argv[0]}\n")
+            self.__write_lock_file(os.getpid(), sys.argv[0])
             time.sleep(self.__race_delay)
             lock_state = self.__lock_state()
             logger.debug(f"{self}: {lock_state}")
