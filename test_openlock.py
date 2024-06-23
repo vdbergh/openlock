@@ -27,7 +27,7 @@ class TestOpenLock(unittest.TestCase):
     def test_acquire_release(self):
         r = FileLock(lock_file)
         self.assertFalse(r.locked())
-        r.acquire()
+        r.acquire(timeout=0)
         self.assertTrue(os.path.exists(lock_file))
         self.assertTrue(r.locked())
         self.assertTrue(r.getpid() == os.getpid())
@@ -37,7 +37,7 @@ class TestOpenLock(unittest.TestCase):
 
     def test_double_acquire(self):
         r = FileLock(lock_file)
-        r.acquire()
+        r.acquire(timeout=0)
         with self.assertRaises(Timeout) as mc:
             r.acquire(timeout=0)
 
@@ -45,7 +45,7 @@ class TestOpenLock(unittest.TestCase):
         r = FileLock(lock_file)
         with self.assertRaises(InvalidRelease) as mc:
             r.release()
-        r.acquire()
+        r.acquire(timeout=0)
         r.release()
         with self.assertRaises(InvalidRelease) as mc:
             r.release()
@@ -54,23 +54,23 @@ class TestOpenLock(unittest.TestCase):
         with open(lock_file, "w") as f:
             pass
         r = FileLock(lock_file)
-        r.acquire()
+        r.acquire(timeout=0)
         r.release()
         with open(lock_file, "w") as f:
             f.write(f"{os.getpid()}\ndummy.py\n")
-        r.acquire()
+        r.acquire(timeout=0)
         self.assertTrue(os.getpid() == r.getpid())
         r.release()
         with open(lock_file, "w") as f:
             f.write("123\ntest_openlock.py\n")
-        r.acquire()
+        r.acquire(timeout=0)
         self.assertTrue(os.getpid() == r.getpid())
         r.release()
 
     def test_timeout(self):
         r = FileLock(lock_file)
         t = time.time()
-        r.acquire()
+        r.acquire(timeout=0)
         with self.assertRaises(Timeout) as mc:
             r.acquire(timeout=2)
         self.assertTrue(time.time() - t >= 2)
@@ -78,14 +78,14 @@ class TestOpenLock(unittest.TestCase):
     def test_different_lock_files(self):
         r = FileLock(lock_file)
         s = FileLock(other_lock_file)
-        r.acquire()
-        s.acquire()
+        r.acquire(timeout=0)
+        s.acquire(timeout=0)
         self.assertTrue(r.locked())
         self.assertTrue(s.locked())
 
     def test_second_process(self):
         r = FileLock(lock_file)
-        r.acquire()
+        r.acquire(timeout=0)
         reply = multiprocessing.Value("d", 0)
 
         def other_process1(lock_file, reply):
@@ -115,7 +115,7 @@ class TestOpenLock(unittest.TestCase):
             r.acquire(timeout=0)
         p.join()
         self.assertTrue(reply.value == 2)
-        r.acquire()
+        r.acquire(timeout=0)
 
 
 if __name__ == "__main__":
