@@ -13,12 +13,16 @@ __version__ = "0.0.1"
 
 logger = logging.getLogger(__name__)
 
+IS_WINDOWS = "windows" in platform.system().lower()
+
 
 def pid_valid(pid, name):
-    IS_WINDOWS = "windows" in platform.system().lower()
     if IS_WINDOWS:
         cmdlet = (
-            "(Get-CimInstance Win32_Process " "-Filter 'ProcessId = {}').CommandLine"
+            # Command line requires elevated privileges
+            # "(Get-CimInstance Win32_Process " "-Filter 'ProcessId = {}').CommandLine"
+            "Get-CimInstance Win32_Process "
+            "-Filter 'ProcessId = {}'"
         ).format(pid)
         cmd = [
             "powershell",
@@ -26,7 +30,7 @@ def pid_valid(pid, name):
         ]
     else:
         # for busybox these options are undocumented...
-        cmd = ["ps", "-f", "-a"]
+        cmd = ["ps", "-f", "-A"]
 
     with subprocess.Popen(
         cmd,
@@ -38,7 +42,7 @@ def pid_valid(pid, name):
     ) as p:
 
         for line in iter(p.stdout.readline, ""):
-            if name in line and str(pid) in line:
+            if name in line.lower() and str(pid) in line:
                 return True
     return False
 
@@ -83,7 +87,7 @@ class FileLock:
             with open(self.__lock_file) as f:
                 s = f.readlines()
         except FileNotFoundError:
-            return {"state": "unlocked"}
+            return {"state": "unlocked", "reason": "file not found"}
         except Exception as e:
             logger.exception(f"Error accessing '{self.__lock_file}': {str(e)}")
             raise
@@ -94,9 +98,9 @@ class FileLock:
             return {"state": "invalid"}
 
         if not pid_valid(pid, name):
-            return {"state": "unlocked"}
+            return {"state": "unlocked", "reason": "pid invalid", "name": name}
 
-        return {"state": "locked", "pid": pid}
+        return {"state": "locked", "pid": pid, "name": name}
 
     def __remove_lock_file(self):
         try:
@@ -109,7 +113,7 @@ class FileLock:
         temp_file = tempfile.NamedTemporaryFile(
             dir=os.path.dirname(self.__lock_file), delete=False
         )
-        temp_file.write(f"{os.getpid()}\n{sys.argv[0]}\n".encode())
+        temp_file.write(f"{os.getpid()}\n{name}\n".encode())
         temp_file.close()
         os.replace(temp_file.name, self.__lock_file)
 
@@ -119,7 +123,8 @@ class FileLock:
         while True:
             if lock_state["state"] == "locked":
                 return
-            self.__write_lock_file(os.getpid(), sys.argv[0])
+            name = "python" if IS_WINDOWS else sys.argv[0]
+            self.__write_lock_file(os.getpid(), name)
             time.sleep(self.__race_delay)
             lock_state = self.__lock_state()
             logger.debug(f"{self}: {lock_state}")
