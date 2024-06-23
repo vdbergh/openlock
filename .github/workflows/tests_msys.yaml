@@ -31,6 +31,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run worker tests
+      - name: Run openlock tests
         run: |
           python -m unittest discover -vb
