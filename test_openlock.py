@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 import unittest
@@ -14,6 +15,7 @@ def show(mc):
 
 class TestOpenLock(unittest.TestCase):
     def setUp(self):
+        logging.disable(logging.DEBUG)
         try:
             os.remove(lock_file)
         except OSError:
