@@ -38,16 +38,16 @@ class TestOpenLock(unittest.TestCase):
     def test_double_acquire(self):
         r = FileLock(lock_file)
         r.acquire(timeout=0)
-        with self.assertRaises(Timeout) as mc:
+        with self.assertRaises(Timeout):
             r.acquire(timeout=0)
 
     def test_invalid_release(self):
         r = FileLock(lock_file)
-        with self.assertRaises(InvalidRelease) as mc:
+        with self.assertRaises(InvalidRelease):
             r.release()
         r.acquire(timeout=0)
         r.release()
-        with self.assertRaises(InvalidRelease) as mc:
+        with self.assertRaises(InvalidRelease):
             r.release()
 
     def test_invalid_lock_file(self):
@@ -71,7 +71,7 @@ class TestOpenLock(unittest.TestCase):
         r = FileLock(lock_file)
         t = time.time()
         r.acquire(timeout=0)
-        with self.assertRaises(Timeout) as mc:
+        with self.assertRaises(Timeout):
             r.acquire(timeout=2)
         self.assertTrue(time.time() - t >= 2)
 
@@ -111,7 +111,7 @@ class TestOpenLock(unittest.TestCase):
         p = multiprocessing.Process(target=other_process2, args=(lock_file, reply))
         p.start()
         time.sleep(1)
-        with self.assertRaises(Timeout) as mc:
+        with self.assertRaises(Timeout):
             r.acquire(timeout=0)
         p.join()
         self.assertTrue(reply.value == 2)
