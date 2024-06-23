@@ -100,11 +100,10 @@ class TestOpenLock(unittest.TestCase):
         self.assertTrue(r.locked())
         self.assertTrue(s.locked())
 
-    @unittest.skipIf(
-        IS_MACOS,
-        "For some reason this test does not work correctly on MacOS",
-    )
     def test_second_process(self):
+        if IS_MACOS:
+            # MacOS changed to 'spawn' in 3.8 which messes up this test!
+            multiprocessing.set_start_method("fork")
         r = FileLock(lock_file)
         r.acquire(timeout=0)
         reply = multiprocessing.Value("d", 0)
