@@ -25,4 +25,4 @@ jobs:
 
       - name: Run worker tests
         run: |
-          python -m unittest discover -vb -s tests
+          python -m unittest discover -vb
