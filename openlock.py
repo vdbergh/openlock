@@ -26,7 +26,7 @@ class InvalidRelease(OpenLockException):
 
 
 # These deal with stale lock file detection
-_stale_race_delay_default = 0.5
+_race_delay_default = 0.5
 
 # This deals with acquiring locks
 _retry_period_default = 0.3
@@ -38,14 +38,14 @@ class FileLock:
         lock_file,
         timeout=None,
         _retry_period=_retry_period_default,
-        _stale_race_delay=_stale_race_delay_default,
+        _race_delay=_race_delay_default,
     ):
         self.__lock_file = Path(lock_file)
         self.__timeout = timeout
         self.__lock = threading.Lock()
         self.__acquired = False
         self.__retry_period = _retry_period
-        self.__stale_race_delay = _stale_race_delay
+        self.__race_delay = _race_delay
         logger.debug(f"{self} created")
 
     def __lock_state(self):
@@ -59,7 +59,7 @@ class FileLock:
             raise
         try:
             pid = int(s[0])
-            name = s[1]
+            name = s[1].strip()
         except (ValueError, IndexError):
             return {"state": "invalid"}
 
@@ -83,7 +83,7 @@ class FileLock:
                 return
             with open(self.__lock_file, "w") as f:
                 f.write(f"{os.getpid()}\n{sys.argv[0]}\n")
-            time.sleep(self.__stale_race_delay)
+            time.sleep(self.__race_delay)
             lock_state = self.__lock_state()
             logger.debug(f"{self}: {lock_state}")
             if lock_state["state"] == "locked":
