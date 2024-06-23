@@ -1,16 +1,45 @@
 import atexit
 import logging
 import os
+import platform
+import subprocess
 import sys
 import threading
 import time
 from pathlib import Path
 
-from util import pid_valid
-
 __version__ = "0.0.1"
 
 logger = logging.getLogger(__name__)
+
+
+def pid_valid(pid, name):
+    IS_WINDOWS = "windows" in platform.system().lower()
+    if IS_WINDOWS:
+        cmdlet = (
+            "(Get-CimInstance Win32_Process " "-Filter 'ProcessId = {}').CommandLine"
+        ).format(pid)
+        cmd = [
+            "powershell",
+            cmdlet,
+        ]
+    else:
+        # for busybox these options are undocumented...
+        cmd = ["ps", "-f", "-a"]
+
+    with subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        universal_newlines=True,
+        bufsize=1,
+        close_fds=not IS_WINDOWS,
+    ) as p:
+
+        for line in iter(p.stdout.readline, ""):
+            if name in line and str(pid) in line:
+                return True
+    return False
 
 
 class OpenLockException(Exception):
