@@ -161,10 +161,10 @@ class FileLock:
                 return
             name = sys.argv[0]
             name_ = name.split()
-            if len(name_) == 0:
-                name = "dummy.py"
-            else:
+            if len(name_) >= 1:
                 name = name_[0]
+            else:
+                name = "python"
             self.__write_lock_file(os.getpid(), name)
             time.sleep(self.__race_delay)
             lock_state = self.__lock_state()
