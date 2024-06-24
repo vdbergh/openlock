@@ -5,7 +5,7 @@ import platform
 import time
 import unittest
 
-from openlock import FileLock, InvalidRelease, Timeout, logger
+from openlock import FileLock, InvalidLockFile, InvalidRelease, Timeout, logger
 
 IS_MACOS = "darwin" in platform.system().lower()
 
@@ -34,7 +34,7 @@ def other_process2(lock_file, reply):
 
 class TestOpenLock(unittest.TestCase):
     def setUp(self):
-        logging.disable(logging.DEBUG)
+        #        logging.disable(logging.DEBUG)
         for L in (lock_file, other_lock_file):
             try:
                 os.remove(L)
@@ -117,6 +117,16 @@ class TestOpenLock(unittest.TestCase):
         p.join()
         self.assertTrue(reply.value == 2)
         r.acquire(timeout=0)
+
+    def test_invalid_exception(self):
+        import openlock
+
+        old_tries = openlock._tries_default
+        openlock._tries_default = 0
+        r = FileLock(lock_file)
+        with self.assertRaises(InvalidLockFile):
+            r.acquire(timeout=0)
+        openlock._tries_default = old_tries
 
 
 if __name__ == "__main__":

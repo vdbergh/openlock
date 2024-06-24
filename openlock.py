@@ -58,6 +58,7 @@ class Timeout(OpenLockException):
 class InvalidRelease(OpenLockException):
     pass
 
+
 class InvalidLockFile(OpenLockException):
     pass
 
@@ -137,7 +138,7 @@ class FileLock:
                     self.__acquired = True
                     atexit.register(self.__remove_lock_file)
                 return
-            raise InvalidLockFile("Unable to obtain a valid lock file")
+        raise InvalidLockFile("Unable to obtain a valid lock file")
 
     def acquire(self, timeout=None):
         if timeout is None:
