@@ -8,6 +8,9 @@ import unittest
 import openlock
 from openlock import FileLock, InvalidLockFile, InvalidRelease, Timeout, logger
 
+logging.basicConfig(format="%(asctime)s:%(levelname)s:%(name)s:%(process)s:%(message)s")
+logger.setLevel(logging.DEBUG)
+
 IS_MACOS = "darwin" in platform.system().lower()
 
 lock_file = "test.lock"
@@ -81,7 +84,7 @@ class TestOpenLock(unittest.TestCase):
         self.assertTrue(os.getpid() == r.getpid())
         r.release()
         with open(lock_file, "w") as f:
-            f.write("123\ntest_openlock.py\n")
+            f.write("1\ntest_openlock.py\n")
         r.acquire(timeout=0)
         self.assertTrue(os.getpid() == r.getpid())
         r.release()

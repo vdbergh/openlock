@@ -42,7 +42,21 @@ def pid_valid(pid, name):
     ) as p:
 
         for line in iter(p.stdout.readline, ""):
-            if name in line.lower() and str(pid) in line:
+            line_ = line.lower().split()
+            if len(line_) == 0:
+                continue
+            if "pid" in line_ or "processid" in line_:
+                # header
+                try:
+                    index = line_.index("pid")
+                except ValueError:
+                    index = line_.index("processid")
+                continue
+            try:
+                pid_ = int(line_[index])
+            except ValueError:
+                continue
+            if name in line.lower() and pid == pid_:
                 return True
     return False
 
