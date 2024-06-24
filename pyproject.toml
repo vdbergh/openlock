@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openlock"
+dynamic = ["version"]
+authors = [
+  { name="Michel Van den Bergh", email="michel.vandenbergh@uhasselt.be" },
+]
+description = "A Python locking library not depending on inter-process locking primitives in the OS"
+readme = "README.md"
+dependencies = []
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools]
+py-modules = ["openlock"]
+
+[tool.setuptools.dynamic]
+version = {attr = "openlock.__version__"}
+
+[project.urls]
+"Homepage" = "https://github.com/vdbergh/openlock"
+"Bug Tracker" = "https://github.com/vdbergh/openlock/issues"
