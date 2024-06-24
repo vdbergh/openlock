@@ -102,7 +102,7 @@ class FileLock:
             return {"state": "unlocked", "reason": "invalid lock file"}
 
         if not pid_valid(pid, name):
-            return {"state": "unlocked", "reason": "pid invalid", "name": name}
+            return {"state": "unlocked", "reason": "pid invalid", "pid": pid, "name": name}
 
         return {"state": "locked", "pid": pid, "name": name}
 
