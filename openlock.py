@@ -16,21 +16,31 @@ logger = logging.getLogger(__name__)
 IS_WINDOWS = "windows" in platform.system().lower()
 
 
-def pid_valid(pid, name):
-    if IS_WINDOWS:
-        cmdlet = (
-            # Command line requires elevated privileges
-            # "(Get-CimInstance Win32_Process -Filter 'ProcessId = {}').CommandLine"
-            "Get-CimInstance Win32_Process "
-            "-Filter 'ProcessId = {}'"
-        ).format(pid)
-        cmd = [
-            "powershell",
-            cmdlet,
-        ]
-    else:
-        # for busybox these options are undocumented...
-        cmd = ["ps", "-f", "-A"]
+def pid_valid_windows(pid, name):
+    cmdlet = (
+        "(Get-CimInstance Win32_Process " "-Filter 'ProcessId = {}').CommandLine"
+    ).format(pid)
+    cmd = [
+        "powershell",
+        cmdlet,
+    ]
+    with subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        universal_newlines=True,
+        bufsize=1,
+        close_fds=not IS_WINDOWS,
+    ) as p:
+        for line in iter(p.stdout.readline, ""):
+            if name in line:
+                return True
+    return False
+
+
+def pid_valid_posix(pid, name):
+    # for busybox these options are undocumented...
+    cmd = ["ps", "-f", "-A"]
 
     with subprocess.Popen(
         cmd,
@@ -40,7 +50,6 @@ def pid_valid(pid, name):
         bufsize=1,
         close_fds=not IS_WINDOWS,
     ) as p:
-
         for line in iter(p.stdout.readline, ""):
             line_ = line.lower().split()
             if len(line_) == 0:
@@ -59,6 +68,13 @@ def pid_valid(pid, name):
             if name in line.lower() and pid == pid_:
                 return True
     return False
+
+
+def pid_valid(pid, name):
+    if IS_WINDOWS:
+        return pid_valid_windows(pid, name)
+    else:
+        return pid_valid_posix(pid, name)
 
 
 class OpenLockException(Exception):
@@ -146,7 +162,12 @@ class FileLock:
         for _ in range(0, self.__tries):
             if lock_state["state"] == "locked":
                 return
-            name = "python" if IS_WINDOWS else sys.argv[0]
+            name = sys.argv[0]
+            name_ = name.split()
+            if len(name_) == 0:
+                name = "dummy.py"
+            else:
+                name = name_[0]
             self.__write_lock_file(os.getpid(), name)
             time.sleep(self.__race_delay)
             lock_state = self.__lock_state()

@@ -12,6 +12,7 @@ logging.basicConfig(format="%(asctime)s:%(levelname)s:%(name)s:%(process)s:%(mes
 logger.setLevel(logging.DEBUG)
 
 IS_MACOS = "darwin" in platform.system().lower()
+IS_WINDOWS = "windows" in platform.system().lower()
 
 lock_file = "test.lock"
 other_lock_file = "test1.lock"
