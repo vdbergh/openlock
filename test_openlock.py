@@ -36,7 +36,7 @@ def other_process2(lock_file, reply):
 
 class TestOpenLock(unittest.TestCase):
     def setUp(self):
-        # logging.disable(logging.DEBUG)
+        logging.disable(logging.DEBUG)
         for L in (lock_file, other_lock_file):
             try:
                 os.remove(L)
