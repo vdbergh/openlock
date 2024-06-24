@@ -30,6 +30,7 @@ def other_process1(lock_file, reply):
 def other_process2(lock_file, reply):
     r = FileLock(lock_file)
     r.acquire(timeout=0)
+    time.sleep(2)
     reply.value = 2
 
 
@@ -115,6 +116,9 @@ class TestOpenLock(unittest.TestCase):
         r.release()
         p = multiprocessing.Process(target=other_process2, args=(lock_file, reply))
         p.start()
+        time.sleep(1)
+        with self.assertRaises(Timeout):
+            r.acquire(timeout=0)
         p.join()
         self.assertTrue(reply.value == 2)
         r.acquire(timeout=0)
