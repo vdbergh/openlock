@@ -1,1 +1,7 @@
-from .openlock import FileLock, InvalidRelease, OpenLockException, Timeout  # noqa: F401
+from .openlock import (  # noqa: F401
+    FileLock,
+    InvalidLockFile,
+    InvalidRelease,
+    OpenLockException,
+    Timeout,
+)
