@@ -54,12 +54,9 @@ def pid_valid_posix(pid, name):
             line_ = line.lower().split()
             if len(line_) == 0:
                 continue
-            if "pid" in line_ or "processid" in line_:
+            if "pid" in line_:
                 # header
-                try:
-                    index = line_.index("pid")
-                except ValueError:
-                    index = line_.index("processid")
+                index = line_.index("pid")
                 continue
             try:
                 pid_ = int(line_[index])
