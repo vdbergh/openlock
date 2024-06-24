@@ -23,7 +23,7 @@ A process that seeks to acquire a lock first looks for an existing valid lock fi
 
 ## Issues
 
-The algorithm fails if a process need more than 0.5 seconds between detecting the absence of a valid lock file and creating a new one.
+The algorithm fails if a process needs more than 0.5 seconds to create a new lock file after detecting the absence of a valid one.
 
 ## History
 
