@@ -58,9 +58,13 @@ class Timeout(OpenLockException):
 class InvalidRelease(OpenLockException):
     pass
 
+class InvalidLockFile(OpenLockException):
+    pass
+
 
 # These deal with stale lock file detection
 _race_delay_default = 0.5
+_tries_default = 2
 
 # This deals with acquiring locks
 _retry_period_default = 0.3
@@ -78,6 +82,7 @@ class FileLock:
         self.__acquired = False
         self.__retry_period = _retry_period_default
         self.__race_delay = _race_delay_default
+        self.__tries = _tries_default
         logger.debug(f"{self} created")
 
     def __lock_state(self):
@@ -118,7 +123,7 @@ class FileLock:
     def __acquire_once(self):
         lock_state = self.__lock_state()
         logger.debug(f"{self}: {lock_state}")
-        while True:
+        for _ in range(0, self.__tries):
             if lock_state["state"] == "locked":
                 return
             name = "python" if IS_WINDOWS else sys.argv[0]
@@ -131,9 +136,8 @@ class FileLock:
                     logger.debug(f"{self} acquired")
                     self.__acquired = True
                     atexit.register(self.__remove_lock_file)
-                    break
-                else:
-                    return
+                return
+            raise InvalidLockFile("Unable to obtain a valid lock file")
 
     def acquire(self, timeout=None):
         if timeout is None:
