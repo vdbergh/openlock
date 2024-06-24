@@ -20,7 +20,7 @@ def pid_valid(pid, name):
     if IS_WINDOWS:
         cmdlet = (
             # Command line requires elevated privileges
-            # "(Get-CimInstance Win32_Process " "-Filter 'ProcessId = {}').CommandLine"
+            # "(Get-CimInstance Win32_Process -Filter 'ProcessId = {}').CommandLine"
             "Get-CimInstance Win32_Process "
             "-Filter 'ProcessId = {}'"
         ).format(pid)
@@ -71,15 +71,13 @@ class FileLock:
         self,
         lock_file,
         timeout=None,
-        _retry_period=_retry_period_default,
-        _race_delay=_race_delay_default,
     ):
         self.__lock_file = Path(lock_file)
         self.__timeout = timeout
         self.__lock = threading.Lock()
         self.__acquired = False
-        self.__retry_period = _retry_period
-        self.__race_delay = _race_delay
+        self.__retry_period = _retry_period_default
+        self.__race_delay = _race_delay_default
         logger.debug(f"{self} created")
 
     def __lock_state(self):
