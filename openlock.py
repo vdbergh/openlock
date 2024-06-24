@@ -99,7 +99,7 @@ class FileLock:
             pid = int(s[0])
             name = s[1].strip()
         except (ValueError, IndexError):
-            return {"state": "invalid"}
+            return {"state": "unlocked", "reason": "invalid lock file"}
 
         if not pid_valid(pid, name):
             return {"state": "unlocked", "reason": "pid invalid", "name": name}

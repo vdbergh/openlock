@@ -5,6 +5,7 @@ import platform
 import time
 import unittest
 
+import openlock
 from openlock import FileLock, InvalidLockFile, InvalidRelease, Timeout, logger
 
 IS_MACOS = "darwin" in platform.system().lower()
@@ -119,8 +120,6 @@ class TestOpenLock(unittest.TestCase):
         r.acquire(timeout=0)
 
     def test_invalid_exception(self):
-        import openlock
-
         old_tries = openlock._tries_default
         openlock._tries_default = 0
         r = FileLock(lock_file)
