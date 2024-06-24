@@ -1,7 +1,8 @@
 import logging  # noqa: F401
-import multiprocessing
 import os
 import platform
+import subprocess
+import sys
 import time
 import unittest
 
@@ -21,21 +22,6 @@ other_lock_file = "test1.lock"
 def show(mc):
     exception = mc.exception
     logger.debug(f"{exception.__class__.__name__}: {str(mc.exception)}")
-
-
-def other_process1(lock_file, reply):
-    r = FileLock(lock_file)
-    try:
-        r.acquire(timeout=0)
-    except Timeout:
-        reply.value = 1
-
-
-def other_process2(lock_file, reply):
-    r = FileLock(lock_file)
-    r.acquire(timeout=0)
-    time.sleep(2)
-    reply.value = 2
 
 
 class TestOpenLock(unittest.TestCase):
@@ -109,19 +95,19 @@ class TestOpenLock(unittest.TestCase):
     def test_second_process(self):
         r = FileLock(lock_file)
         r.acquire(timeout=0)
-        reply = multiprocessing.Value("d", 0)
-        p = multiprocessing.Process(target=other_process1, args=(lock_file, reply))
-        p.start()
-        p.join()
-        self.assertTrue(reply.value == 1)
+        p = subprocess.run(
+            [sys.executable, "_helper.py", lock_file, "1"], stdout=subprocess.PIPE
+        )
+        self.assertTrue(p.stdout.decode().strip() == "1")
         r.release()
-        p = multiprocessing.Process(target=other_process2, args=(lock_file, reply))
-        p.start()
+        p = subprocess.Popen(
+            [sys.executable, "_helper.py", lock_file, "2"], stdout=subprocess.PIPE
+        )
         time.sleep(1)
         with self.assertRaises(Timeout):
             r.acquire(timeout=0)
-        p.join()
-        self.assertTrue(reply.value == 2)
+        out, err = p.communicate()
+        self.assertTrue(out.decode().strip() == "2")
         r.acquire(timeout=0)
 
     def test_invalid_exception(self):
