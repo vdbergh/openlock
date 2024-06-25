@@ -1,4 +1,5 @@
 import atexit
+import copy
 import logging
 import os
 import platform
@@ -90,12 +91,19 @@ class InvalidLockFile(OpenLockException):
     pass
 
 
-# These deal with stale lock file detection
-_race_delay_default = 0.5
-_tries_default = 2
+_defaults = {
+    "race_delay": 0.5,
+    "tries": 2,
+    "retry_period": 0.3,
+}
 
-# This deals with acquiring locks
-_retry_period_default = 0.3
+
+def get_defaults():
+    return copy.copy(_defaults)
+
+
+def set_defaults(**kw):
+    _defaults.update(kw)
 
 
 class FileLock:
@@ -108,9 +116,9 @@ class FileLock:
         self.__timeout = timeout
         self.__lock = threading.Lock()
         self.__acquired = False
-        self.__retry_period = _retry_period_default
-        self.__race_delay = _race_delay_default
-        self.__tries = _tries_default
+        self.__retry_period = _defaults["retry_period"]
+        self.__race_delay = _defaults["race_delay"]
+        self.__tries = _defaults["tries"]
         logger.debug(f"{self} created")
 
     def __lock_state(self):

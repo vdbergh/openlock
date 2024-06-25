@@ -6,8 +6,15 @@ import sys
 import time
 import unittest
 
-import openlock
-from openlock import FileLock, InvalidLockFile, InvalidRelease, Timeout, logger
+from openlock import (
+    FileLock,
+    InvalidLockFile,
+    InvalidRelease,
+    Timeout,
+    get_defaults,
+    logger,
+    set_defaults,
+)
 
 logging.basicConfig(format="%(asctime)s:%(levelname)s:%(name)s:%(process)s:%(message)s")
 logger.setLevel(logging.DEBUG)
@@ -111,12 +118,12 @@ class TestOpenLock(unittest.TestCase):
         r.acquire(timeout=0)
 
     def test_invalid_exception(self):
-        old_tries = openlock._tries_default
-        openlock._tries_default = 0
+        old_tries = get_defaults()
+        set_defaults(tries=0)
         r = FileLock(lock_file)
         with self.assertRaises(InvalidLockFile):
             r.acquire(timeout=0)
-        openlock._tries_default = old_tries
+        set_defaults(**old_tries)
 
 
 if __name__ == "__main__":

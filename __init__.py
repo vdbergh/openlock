@@ -4,4 +4,7 @@ from .openlock import (  # noqa: F401
     InvalidRelease,
     OpenLockException,
     Timeout,
+    get_defaults,
+    logger,
+    set_defaults,
 )
