@@ -34,7 +34,8 @@ def pid_valid_windows(pid, name):
         close_fds=not IS_WINDOWS,
     ) as p:
         for line in iter(p.stdout.readline, ""):
-            if name in line:
+            line = line.lower()
+            if name.lower() in line and "python" in line:
                 return True
     return False
 
@@ -52,7 +53,8 @@ def pid_valid_posix(pid, name):
         close_fds=not IS_WINDOWS,
     ) as p:
         for line in iter(p.stdout.readline, ""):
-            line_ = line.lower().split()
+            line = line.lower()
+            line_ = line.split()
             if len(line_) == 0:
                 continue
             if "pid" in line_:
@@ -63,7 +65,7 @@ def pid_valid_posix(pid, name):
                 pid_ = int(line_[index])
             except ValueError:
                 continue
-            if name in line.lower() and pid == pid_:
+            if name.lower() in line and "python" in line and pid == pid_:
                 return True
     return False
 
@@ -167,11 +169,7 @@ class FileLock:
         for _ in range(0, self.__tries):
             if lock_state["state"] == "locked":
                 return
-            name = sys.argv[0]
-            name_ = name.split()
-            if len(name_) == 0:
-                name = "python"
-            self.__write_lock_file(os.getpid(), name)
+            self.__write_lock_file(os.getpid(), sys.argv[0])
             time.sleep(self.__race_delay)
             lock_state = self.__lock_state()
             logger.debug(f"{self}: {lock_state}")
