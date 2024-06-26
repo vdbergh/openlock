@@ -9,7 +9,7 @@ A locking library not depending on inter-process locking primitives in the OS.
 - `FileLock.release()`. Releases the lock. May raise an `InvalidRelease` exception.
 - `FileLock.locked()`. Indicates if the lock is held by a process.
 - `FileLock.getpid()`. The PID of the process that holds the lock, if any. Otherwise returns `None`.
-- `openlock.set_defaults(**kw)`. Sets default values for the internal parameters. Currently `tries`, `retry_period` and `race_delay` with values of 2, 0.3s and 0.5s respectively.
+- `openlock.set_defaults(**kw)`. Sets default values for the internal parameters. Currently `tries`, `retry_period`, `race_delay` and `slow_system_exception` with values of 2, 0.3s, 0.5s and False respectively.
 - `openlock.get_defaults()`. Returns a dictionary with the default values for the internal parameters.
 
 ## How does it work

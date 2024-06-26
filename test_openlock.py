@@ -9,7 +9,9 @@ import unittest
 from openlock import (
     FileLock,
     InvalidLockFile,
+    InvalidOption,
     InvalidRelease,
+    SlowSystem,
     Timeout,
     get_defaults,
     logger,
@@ -127,13 +129,39 @@ class TestOpenLock(unittest.TestCase):
 
     def test_options(self):
         option_keys = set(get_defaults().keys())
-        self.assertTrue(option_keys == {"tries", "retry_period", "race_delay"})
-        options = {"tries": 5, "retry_period": 100.0, "race_delay": 100}
+        self.assertTrue(
+            option_keys
+            == {"tries", "retry_period", "race_delay", "slow_system_exception"}
+        )
+        options = {
+            "tries": 5,
+            "retry_period": 100.0,
+            "race_delay": 100,
+            "slow_system_exception": True,
+        }
         set_defaults(**options)
         options_ = get_defaults()
         self.assertTrue(options == options_)
         option_keys = set(options_)
-        self.assertTrue(option_keys == {"tries", "retry_period", "race_delay"})
+        self.assertTrue(
+            option_keys
+            == {"tries", "retry_period", "race_delay", "slow_system_exception"}
+        )
+
+    def test_slow_system(self):
+        set_defaults(slow_system_exception=True)
+        r = FileLock(lock_file)
+        r.acquire(timeout=0)
+        r.release()
+        set_defaults(race_delay=0)
+        r = FileLock(lock_file)
+        logging.disable(logging.WARNING)
+        with self.assertRaises(SlowSystem):
+            r.acquire(timeout=0)
+
+    def test_invalid_option(self):
+        with self.assertRaises(InvalidOption):
+            set_defaults(tris=1)
 
 
 if __name__ == "__main__":

@@ -93,10 +93,19 @@ class InvalidLockFile(OpenLockException):
     pass
 
 
+class SlowSystem(OpenLockException):
+    pass
+
+
+class InvalidOption(OpenLockException):
+    pass
+
+
 _defaults = {
     "race_delay": 0.5,
     "tries": 2,
     "retry_period": 0.3,
+    "slow_system_exception": False,
 }
 
 
@@ -105,6 +114,8 @@ def get_defaults():
 
 
 def set_defaults(**kw):
+    if not set(kw.keys()).issubset(set(_defaults.keys())):
+        raise InvalidOption()
     _defaults.update(kw)
 
 
@@ -121,6 +132,7 @@ class FileLock:
         self.__retry_period = _defaults["retry_period"]
         self.__race_delay = _defaults["race_delay"]
         self.__tries = _defaults["tries"]
+        self.__slow_system_exception = _defaults["slow_system_exception"]
         logger.debug(f"{self} created")
 
     def __lock_state(self):
@@ -173,11 +185,14 @@ class FileLock:
             self.__write_lock_file(os.getpid(), sys.argv[0])
             tt = time.time()
             if tt - t > (2 / 3) * self.__race_delay:
-                logger.warning(
+                message = (
                     "Slow system detected!! Consider increasing the "
                     "'race_delay' parameter "
-                    f"(current value: {self.__race_delay:2f} seconds)."
+                    f"(current value: {self.__race_delay:2f}, used: {tt-t:2f})."
                 )
+                logger.warning(message)
+                if self.__slow_system_exception:
+                    raise SlowSystem(message)
             time.sleep(self.__race_delay)
             t = time.time()
             lock_state = self.__lock_state()
