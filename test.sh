@@ -1,5 +1,9 @@
 # Create stale lock file!
-# touch test.lock
+
+cat <<EOF > test.lock
+123
+test.py
+EOF
 
 python test.py &
 python test.py &
