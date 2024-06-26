@@ -174,8 +174,9 @@ class FileLock:
             tt = time.time()
             if tt - t > (2 / 3) * self.__race_delay:
                 logger.warning(
-                    "Slow system detected. Consider increasing the "
-                    "'race_delay' parameter."
+                    "Slow system detected!! Consider increasing the "
+                    "'race_delay' parameter "
+                    f"(current value: {self.__race_delay:2f} seconds)."
                 )
             time.sleep(self.__race_delay)
             t = time.time()

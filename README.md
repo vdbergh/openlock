@@ -6,7 +6,7 @@ A locking library not depending on inter-process locking primitives in the OS.
 
 - `FileLock(lock_file, timeout=None)`. Constructor. The optional `timeout` argument is the default for the corresponding argument of `acquire()` (see below). A `FileLock` object supports the context manager protocol.
 - `FileLock.acquire(timeout=None)`. Attempts to acquire the lock. The optional `timeout` argument specifies the maximum waiting time in seconds before a `Timeout` exception is raised.
-- `FileLock.release()`. Releases the lock. May raise and `InvalidRelease` exception.
+- `FileLock.release()`. Releases the lock. May raise an `InvalidRelease` exception.
 - `FileLock.locked()`. Indicates if the lock is held by a process.
 - `FileLock.getpid()`. The PID of the process that holds the lock, if any. Otherwise returns `None`.
 
@@ -23,7 +23,7 @@ A process that seeks to acquire a lock first looks for an existing valid lock fi
 
 ## Issues
 
-- The algorithm fails if a process needs more than 0.5 seconds to create a new lock file after detecting the absence of a valid one.
+- The algorithm fails if a process needs more than 0.5 seconds to create a new lock file after detecting the absence of a valid one. The library will issue a warning if it thinks the system is too slow for the algorithm to work correctly.
 
 - Although it is very unlikely, it may be that the data `(pid, name)` matches a different Python process since PIDs are only unique over the lifetime of a process. In that case the algorithm fails to recognize the lock file as stale.
 
