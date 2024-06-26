@@ -30,8 +30,6 @@ def pid_valid_windows(pid, name):
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         universal_newlines=True,
-        bufsize=1,
-        close_fds=not IS_WINDOWS,
     ) as p:
         for line in iter(p.stdout.readline, ""):
             line = line.lower()
@@ -41,31 +39,17 @@ def pid_valid_windows(pid, name):
 
 
 def pid_valid_posix(pid, name):
-    # for busybox these options are undocumented...
-    cmd = ["ps", "-f", "-A"]
+    # TODO fix busybox (it does not know the -p option)
+    cmd = ["ps", "-f", "-p", str(pid)]
 
     with subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         universal_newlines=True,
-        bufsize=1,
-        close_fds=not IS_WINDOWS,
     ) as p:
         for line in iter(p.stdout.readline, ""):
-            line = line.lower()
-            line_ = line.split()
-            if len(line_) == 0:
-                continue
-            if "pid" in line_:
-                # header
-                index = line_.index("pid")
-                continue
-            try:
-                pid_ = int(line_[index])
-            except ValueError:
-                continue
-            if name.lower() in line and "python" in line and pid == pid_:
+            if name in line and "python" in line:
                 return True
     return False
 
@@ -135,7 +119,7 @@ class FileLock:
         self.__slow_system_exception = _defaults["slow_system_exception"]
         logger.debug(f"{self} created")
 
-    def __lock_state(self):
+    def __lock_state(self, pid_valid_test=True):
         try:
             with open(self.__lock_file) as f:
                 s = f.readlines()
@@ -150,13 +134,31 @@ class FileLock:
         except (ValueError, IndexError):
             return {"state": "unlocked", "reason": "invalid lock file"}
 
-        if not pid_valid(pid, name):
+        if not pid_valid_test:
             return {
-                "state": "unlocked",
-                "reason": "pid invalid",
+                "state": "locked",
                 "pid": pid,
                 "name": name,
             }
+        else:
+            if not pid_valid(pid, name):
+                retry = self.__lock_state(pid_valid_test=False)
+                if retry["state"] == "locked" and (
+                    retry["pid"] != pid or retry["name"] != name
+                ):
+                    logger.debug(
+                        f"Lock file {self.__lock_file} has changed "
+                        f"from {(pid,name)} to {(retry['pid'],retry['name'])}. "
+                        f"Retrying..."
+                    )
+                    return self.__lock_state()
+                else:
+                    return {
+                        "state": "unlocked",
+                        "reason": "pid not valid",
+                        "pid": pid,
+                        "name": name,
+                    }
 
         return {"state": "locked", "pid": pid, "name": name}
 
@@ -176,13 +178,13 @@ class FileLock:
         os.replace(temp_file.name, self.__lock_file)
 
     def __acquire_once(self):
-        t = time.time()
         lock_state = self.__lock_state()
         logger.debug(f"{self}: {lock_state}")
         for _ in range(0, self.__tries):
             if lock_state["state"] == "locked":
                 return
             pid, name = os.getpid(), sys.argv[0]
+            t = time.time()
             self.__write_lock_file(pid, name)
             tt = time.time()
             logger.debug(
@@ -199,7 +201,6 @@ class FileLock:
                 if self.__slow_system_exception:
                     raise SlowSystem(message)
             time.sleep(self.__race_delay)
-            t = time.time()
             lock_state = self.__lock_state()
             logger.debug(f"{self}: {lock_state}")
             if lock_state["state"] == "locked":
