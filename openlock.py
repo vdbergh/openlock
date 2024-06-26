@@ -102,7 +102,7 @@ class InvalidOption(OpenLockException):
 
 
 _defaults = {
-    "race_delay": 0.5,
+    "race_delay": 0.2,
     "tries": 2,
     "retry_period": 0.3,
     "slow_system_exception": False,
