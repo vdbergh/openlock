@@ -164,13 +164,21 @@ class FileLock:
         os.replace(temp_file.name, self.__lock_file)
 
     def __acquire_once(self):
+        t = time.time()
         lock_state = self.__lock_state()
         logger.debug(f"{self}: {lock_state}")
         for _ in range(0, self.__tries):
             if lock_state["state"] == "locked":
                 return
             self.__write_lock_file(os.getpid(), sys.argv[0])
+            tt = time.time()
+            if tt - t > (2 / 3) * self.__race_delay:
+                logger.warning(
+                    "Slow system detected. Consider increasing the "
+                    "'race_delay' parameter."
+                )
             time.sleep(self.__race_delay)
+            t = time.time()
             lock_state = self.__lock_state()
             logger.debug(f"{self}: {lock_state}")
             if lock_state["state"] == "locked":
