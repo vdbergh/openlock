@@ -125,6 +125,16 @@ class TestOpenLock(unittest.TestCase):
         with self.assertRaises(InvalidLockFile):
             r.acquire(timeout=0)
 
+    def test_options(self):
+        option_keys = set(get_defaults().keys())
+        self.assertTrue(option_keys == {"tries", "retry_period", "race_delay"})
+        options = {"tries": 5, "retry_period": 100.0, "race_delay": 100}
+        set_defaults(**options)
+        options_ = get_defaults()
+        self.assertTrue(options == options_)
+        option_keys = set(options_)
+        self.assertTrue(option_keys == {"tries", "retry_period", "race_delay"})
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
