@@ -184,7 +184,7 @@ class FileLock:
                 return
             self.__write_lock_file(os.getpid(), sys.argv[0])
             tt = time.time()
-            if tt - t > (2 / 3) * self.__race_delay:
+            if tt - t >= (2 / 3) * self.__race_delay:
                 message = (
                     "Slow system detected!! Consider increasing the "
                     "'race_delay' parameter "
