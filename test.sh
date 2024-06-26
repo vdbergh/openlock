@@ -1,5 +1,5 @@
 # Create stale lock file!
-touch test.lock
+# touch test.lock
 
 python test.py &
 python test.py &

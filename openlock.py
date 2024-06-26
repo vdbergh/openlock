@@ -182,8 +182,13 @@ class FileLock:
         for _ in range(0, self.__tries):
             if lock_state["state"] == "locked":
                 return
-            self.__write_lock_file(os.getpid(), sys.argv[0])
+            pid, name = os.getpid(), sys.argv[0]
+            self.__write_lock_file(pid, name)
             tt = time.time()
+            logger.debug(
+                f"Lock file '{self.__lock_file}' with contents {{'pid': {pid}, "
+                f"'name': '{name}'}} written in {tt-t:2f} seconds"
+            )
             if tt - t >= (2 / 3) * self.__race_delay:
                 message = (
                     "Slow system detected!! Consider increasing the "
