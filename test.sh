@@ -11,9 +11,6 @@ python test.py &
 python test.py &
 python test.py &
 python test.py &
-
-sleep 4
-
 python test.py &
 python test.py &
 python test.py &
