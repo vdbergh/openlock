@@ -25,7 +25,7 @@ A process that seeks to acquire a lock first looks for an existing valid lock fi
 
 ## Issues
 
-- The algorithm fails if a process needs more than 0.5 seconds to create a new lock file after detecting the absence of a valid one. The library will issue a warning if it thinks the system is too slow for the algorithm to work correctly and it will recommend to increase the value of the `race_delay` parameter.
+- The algorithm fails if a process needs more than 0.5 seconds to create a new lock file after detecting the absence of a valid one. The library will issue a warning if it thinks the system is too slow for the algorithm to work correctly and it will recommend to increase the value of the `race_delay` parameter. Note that the current value of 0.5 seconds is extremely conservative.
 
 - Although it is very unlikely, it may be that the data `(pid, name)` matches a different Python process since PIDs are only unique over the lifetime of a process. In that case the algorithm fails to recognize the lock file as stale.
 
