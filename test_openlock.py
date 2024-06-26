@@ -24,6 +24,7 @@ IS_WINDOWS = "windows" in platform.system().lower()
 
 lock_file = "test.lock"
 other_lock_file = "test1.lock"
+defaults = get_defaults()
 
 
 def show(mc):
@@ -39,6 +40,7 @@ class TestOpenLock(unittest.TestCase):
                 os.remove(L)
             except OSError:
                 pass
+        set_defaults(**defaults)
 
     def test_acquire_release(self):
         r = FileLock(lock_file)
@@ -118,12 +120,10 @@ class TestOpenLock(unittest.TestCase):
         r.acquire(timeout=0)
 
     def test_invalid_exception(self):
-        old_tries = get_defaults()
         set_defaults(tries=0)
         r = FileLock(lock_file)
         with self.assertRaises(InvalidLockFile):
             r.acquire(timeout=0)
-        set_defaults(**old_tries)
 
 
 if __name__ == "__main__":
