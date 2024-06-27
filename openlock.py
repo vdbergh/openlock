@@ -207,13 +207,13 @@ class FileLock:
             tt = time.time()
             logger.debug(
                 f"Lock file '{self.__lock_file}' with contents {{'pid': {pid}, "
-                f"'name': '{name}'}} written in {tt-t:2f} seconds"
+                f"'name': '{name}'}} written in {tt-t:#.2g} seconds"
             )
             if tt - t >= (2 / 3) * self.__race_delay:
                 message = (
                     "Slow system detected!! Consider increasing the "
                     "'race_delay' parameter "
-                    f"(current value: {self.__race_delay:2f}, used: {tt-t:2f})."
+                    f"(current value: {self.__race_delay:#.2g}, used: {tt-t:#.2g})."
                 )
                 logger.warning(message)
                 if self.__slow_system_exception:
