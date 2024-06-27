@@ -25,16 +25,15 @@ def pid_valid_windows(pid, name):
         "powershell",
         cmdlet,
     ]
-    with subprocess.Popen(
+    p = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
         universal_newlines=True,
         bufsize=1,
-    ) as p:
-        for line in iter(p.stdout.readline, ""):
-            line = line.lower()
-            if name.lower() in line and "python" in line:
-                return True
+    )
+    out = p.stdout.lower()
+    if name.lower() in out and "python" in out:
+        return True
     return False
 
 
