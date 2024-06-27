@@ -5,6 +5,7 @@ import subprocess
 import sys
 import time
 import unittest
+from pathlib import Path
 
 from openlock import (
     FileLock,
@@ -163,6 +164,10 @@ class TestOpenLock(unittest.TestCase):
         with self.assertRaises(InvalidOption) as e:
             set_defaults(tris=1)
         self.assertTrue("tris" in str(e.exception))
+
+    def test_default_lock_file(self):
+        r = FileLock()
+        self.assertTrue(r.lock_file == Path("openlock.lock"))
 
 
 if __name__ == "__main__":

@@ -119,11 +119,11 @@ def set_defaults(**kw):
 class FileLock:
     def __init__(
         self,
-        lock_file,
+        lock_file="openlock.lock",
         timeout=None,
     ):
-        self.__lock_file = Path(lock_file)
-        self.__timeout = timeout
+        self.lock_file = Path(lock_file)
+        self.timeout = timeout
         self.__lock = threading.Lock()
         self.__acquired = False
         self.__retry_period = _defaults["retry_period"]
@@ -134,12 +134,12 @@ class FileLock:
 
     def __lock_state(self, verify_pid_valid=True):
         try:
-            with open(self.__lock_file) as f:
+            with open(self.lock_file) as f:
                 s = f.readlines()
         except FileNotFoundError:
             return {"state": "unlocked", "reason": "file not found"}
         except Exception as e:
-            logger.exception(f"Error accessing '{self.__lock_file}': {str(e)}")
+            logger.exception(f"Error accessing '{self.lock_file}': {str(e)}")
             raise
         try:
             pid = int(s[0])
@@ -160,7 +160,7 @@ class FileLock:
                     retry["pid"] != pid or retry["name"] != name
                 ):
                     logger.debug(
-                        f"Lock file '{self.__lock_file}' has changed "
+                        f"Lock file '{self.lock_file}' has changed "
                         f"from {{'pid': {pid}, 'name': '{name}'}} to {{'pid': "
                         f"{retry['pid']}, 'name': {repr(retry['name'])}}} "
                     )
@@ -177,18 +177,18 @@ class FileLock:
 
     def __remove_lock_file(self):
         try:
-            os.remove(self.__lock_file)
-            logger.debug(f"Lock file '{self.__lock_file}' removed")
+            os.remove(self.lock_file)
+            logger.debug(f"Lock file '{self.lock_file}' removed")
         except OSError:
             pass
 
     def __write_lock_file(self, pid, name):
         temp_file = tempfile.NamedTemporaryFile(
-            dir=os.path.dirname(self.__lock_file), delete=False
+            dir=os.path.dirname(self.lock_file), delete=False
         )
         temp_file.write(f"{os.getpid()}\n{name}\n".encode())
         temp_file.close()
-        os.replace(temp_file.name, self.__lock_file)
+        os.replace(temp_file.name, self.lock_file)
 
     def __acquire_once(self):
         lock_state = self.__lock_state()
@@ -201,7 +201,7 @@ class FileLock:
             self.__write_lock_file(pid, name)
             tt = time.time()
             logger.debug(
-                f"Lock file '{self.__lock_file}' with contents {{'pid': {pid}, "
+                f"Lock file '{self.lock_file}' with contents {{'pid': {pid}, "
                 f"'name': '{name}'}} written in {tt-t:#.2g} seconds"
             )
             if tt - t >= (2 / 3) * self.__race_delay:
@@ -226,7 +226,7 @@ class FileLock:
 
     def acquire(self, timeout=None):
         if timeout is None:
-            timeout = self.__timeout
+            timeout = self.timeout
         start_time = time.time()
         with self.__lock:
             while True:
@@ -270,6 +270,6 @@ class FileLock:
         self.release()
 
     def __str__(self):
-        return f"FileLock('{self.__lock_file}')"
+        return f"FileLock('{self.lock_file}')"
 
     __repr__ = __str__
