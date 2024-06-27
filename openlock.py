@@ -199,8 +199,8 @@ class FileLock:
                 return
             pid, name = os.getpid(), sys.argv[0]
             name_ = name.split()
-            if len(name_) > 1:
-                name = name_[0]
+            if len(name_) >= 1:
+                name = Path(name_[0]).stem
             t = time.time()
             self.__write_lock_file(pid, name)
             tt = time.time()
