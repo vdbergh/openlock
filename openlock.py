@@ -28,10 +28,8 @@ def pid_valid_windows(pid, name):
     with subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
         universal_newlines=True,
         bufsize=1,
-        close_fds=not IS_WINDOWS,
     ) as p:
         for line in iter(p.stdout.readline, ""):
             line = line.lower()
@@ -47,10 +45,8 @@ def pid_valid_posix(pid, name):
     with subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
         universal_newlines=True,
         bufsize=1,
-        close_fds=not IS_WINDOWS,
     ) as p:
         for line in iter(p.stdout.readline, ""):
             line = line.lower()
