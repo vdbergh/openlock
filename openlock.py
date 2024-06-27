@@ -198,6 +198,9 @@ class FileLock:
             if lock_state["state"] == "locked":
                 return
             pid, name = os.getpid(), sys.argv[0]
+            name_ = name.split()
+            if len(name_) > 1:
+                name = name_[0]
             t = time.time()
             self.__write_lock_file(pid, name)
             tt = time.time()
@@ -251,7 +254,10 @@ class FileLock:
 
     def locked(self):
         with self.__lock:
-            return self.__lock_state()["state"] == "locked"
+            if self.__acquired:
+                return True
+            lock_state = self.__lock_state()
+            return lock_state["state"] == "locked"
 
     def getpid(self):
         with self.__lock:
