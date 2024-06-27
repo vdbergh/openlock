@@ -40,6 +40,7 @@ def pid_valid_windows(pid, name):
 def pid_valid_posix(pid, name):
     # for busybox these options are undocumented...
     cmd = ["ps", "-f", "-A"]
+    cmd = ["ps", "-f", str(pid)]
 
     with subprocess.Popen(
         cmd,
