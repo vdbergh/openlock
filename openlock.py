@@ -114,8 +114,10 @@ def get_defaults():
 
 
 def set_defaults(**kw):
-    if not set(kw.keys()).issubset(set(_defaults.keys())):
-        raise InvalidOption()
+    dk = _defaults.keys()
+    for k in kw.keys():
+        if k not in dk:
+            raise InvalidOption(f"Invalid option: '{k}'")
     _defaults.update(kw)
 
 

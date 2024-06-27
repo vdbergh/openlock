@@ -31,7 +31,7 @@ defaults = get_defaults()
 
 def show(mc):
     exception = mc.exception
-    logger.debug(f"{exception.__class__.__name__}: {str(mc.exception)}")
+    logger.debug(f"{exception.__class__.__name__}: {str(exception)}")
 
 
 class TestOpenLock(unittest.TestCase):
@@ -160,8 +160,9 @@ class TestOpenLock(unittest.TestCase):
             r.acquire(timeout=0)
 
     def test_invalid_option(self):
-        with self.assertRaises(InvalidOption):
+        with self.assertRaises(InvalidOption) as e:
             set_defaults(tris=1)
+        self.assertTrue("tris" in str(e.exception))
 
 
 if __name__ == "__main__":
