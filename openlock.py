@@ -197,7 +197,7 @@ class FileLock:
         except FileExistsError:
             locked = False
         except OSError as e:
-            logger.debug(f"Error creating '{self.lock_file}': {str(e)}")
+            logger.error(f"Error creating '{self.lock_file}': {str(e)}")
             locked = False
 
         # Remove the temporary file
@@ -209,7 +209,7 @@ class FileLock:
         temp_file = tempfile.NamedTemporaryFile(
             dir=os.path.dirname(self.lock_file), delete=False
         )
-        temp_file.write(f"{os.getpid()}\n{name}\n".encode())
+        temp_file.write(f"{pid}\n{name}\n".encode())
         temp_file.close()
         os.replace(temp_file.name, self.lock_file)
 
