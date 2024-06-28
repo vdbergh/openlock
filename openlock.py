@@ -184,18 +184,21 @@ class FileLock:
             pass
 
     def __create_lock_file(self, pid, name):
-        temp_file = tempfile.NamedTemporaryFile(dir=os.path.dirname(self.lock_file), delete=False)
-        temp_file.write(f"{pid}\n{name}".encode())
+        temp_file = tempfile.NamedTemporaryFile(
+            dir=os.path.dirname(self.lock_file), delete=False
+        )
+        temp_file.write(f"{pid}\n{name}\n".encode())
         temp_file.close()
 
         locked = True
         # try linking, which is atomic, and will fail if the file exists
         try:
             os.link(temp_file.name, self.lock_file)
+            logger.debug(f"Lock file '{self.lock_file}' created")
         except FileExistsError:
             locked = False
-        except OsError as e:
-            logger.debug("Error creating '{self.lock_file}'")
+        except OSError as e:
+            logger.debug(f"Error creating '{self.lock_file}': {str(e)}")
             locked = False
 
         # Remove the temporary file
@@ -222,7 +225,7 @@ class FileLock:
             self.__acquired = True
             atexit.register(self.__remove_lock_file)
             return
-        
+
         lock_state = self.__lock_state()
         logger.debug(f"{self}: {lock_state}")
         for _ in range(0, self.__tries):
