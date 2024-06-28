@@ -173,11 +173,18 @@ class TestOpenLock(unittest.TestCase):
         r = FileLock()
         self.assertTrue(r.lock_file == Path("openlock.lock"))
 
-    def test_no_latency(self):
-        set_defaults(race_delay=1)
+    def test_latency(self):
+        set_defaults(race_delay=1.0)
         r = FileLock(lock_file)
         t = time.time()
         r.acquire()
+        tt = time.time()
+        self.assertTrue(tt - t < 0.2)
+        t = time.time()
+        try:
+            r.acquire(timeout=0)
+        except Timeout:
+            pass
         tt = time.time()
         self.assertTrue(tt - t < 0.2)
         r.release()
@@ -186,7 +193,7 @@ class TestOpenLock(unittest.TestCase):
         t = time.time()
         r.acquire()
         tt = time.time()
-        self.assertFalse(tt - t < 0.2)
+        self.assertTrue(tt - t > 0.8)
 
 
 if __name__ == "__main__":
