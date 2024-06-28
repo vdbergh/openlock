@@ -33,7 +33,7 @@ In follows from this description that the algorithm is latency free in the commo
 
 ## Issues
 
-There are no know issues in the common use case where there are no invalid lock files. In general the following is true:
+There are no known issues in the common use case where there are no invalid lock files. In general the following is true:
 
 - The algorithm for dealing with invalid lock files fails if a process needs more time than indicated by the `race_delay` parameter to create a new lock file after detecting the absence of a valid one. The library will issue a warning if it thinks the system is too slow for the algorithm to work correctly and it will recommend to increase the value of the `race_delay` parameter.
 
