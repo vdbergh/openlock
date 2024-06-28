@@ -10,7 +10,7 @@ import threading
 import time
 from pathlib import Path
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 logger = logging.getLogger(__name__)
 
