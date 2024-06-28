@@ -123,6 +123,8 @@ class TestOpenLock(unittest.TestCase):
         r.acquire(timeout=0)
 
     def test_invalid_exception(self):
+        with open(lock_file, "w") as f:
+            f.write("1\ntest_openlock.py\n")
         set_defaults(tries=0)
         r = FileLock(lock_file)
         with self.assertRaises(InvalidLockFile):
@@ -158,6 +160,8 @@ class TestOpenLock(unittest.TestCase):
         r = FileLock(lock_file)
         logging.disable(logging.WARNING)
         with self.assertRaises(SlowSystem):
+            with open(lock_file, "w") as f:
+                f.write("1\ntest_openlock.py\n")
             r.acquire(timeout=0)
 
     def test_invalid_option(self):

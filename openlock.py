@@ -183,6 +183,26 @@ class FileLock:
         except OSError:
             pass
 
+    def __create_lock_file(self, pid, name):
+        temp_file = tempfile.NamedTemporaryFile(dir=os.path.dirname(self.lock_file), delete=False)
+        temp_file.write(f"{pid}\n{name}".encode())
+        temp_file.close()
+
+        locked = True
+        # try linking, which is atomic, and will fail if the file exists
+        try:
+            os.link(temp_file.name, self.lock_file)
+        except FileExistsError:
+            locked = False
+        except OsError as e:
+            logger.debug("Error creating '{self.lock_file}'")
+            locked = False
+
+        # Remove the temporary file
+        os.remove(temp_file.name)
+
+        return locked
+
     def __write_lock_file(self, pid, name):
         temp_file = tempfile.NamedTemporaryFile(
             dir=os.path.dirname(self.lock_file), delete=False
@@ -192,15 +212,22 @@ class FileLock:
         os.replace(temp_file.name, self.lock_file)
 
     def __acquire_once(self):
+        pid, name = os.getpid(), sys.argv[0]
+        name_ = name.split()
+        if len(name_) >= 1:
+            name = Path(name_[0]).stem
+
+        if self.__create_lock_file(pid, name):
+            logger.debug(f"{self} acquired")
+            self.__acquired = True
+            atexit.register(self.__remove_lock_file)
+            return
+        
         lock_state = self.__lock_state()
         logger.debug(f"{self}: {lock_state}")
         for _ in range(0, self.__tries):
             if lock_state["state"] == "locked":
                 return
-            pid, name = os.getpid(), sys.argv[0]
-            name_ = name.split()
-            if len(name_) >= 1:
-                name = Path(name_[0]).stem
             t = time.time()
             self.__write_lock_file(pid, name)
             tt = time.time()

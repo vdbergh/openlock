@@ -1,3 +1,4 @@
+#!/bin/bash
 # Create stale lock file!
 
 cat <<EOF > test.lock
