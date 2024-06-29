@@ -5,7 +5,6 @@ import subprocess
 import sys
 import time
 import unittest
-import warnings
 from pathlib import Path
 
 from openlock import (
@@ -39,7 +38,7 @@ def show(mc):
 class TestOpenLock(unittest.TestCase):
     def setUp(self):
         logging.disable(logging.DEBUG)
-        warnings.simplefilter("ignore")
+        #        warnings.simplefilter("ignore")
         for L in (lock_file, other_lock_file):
             try:
                 os.remove(L)
@@ -160,10 +159,11 @@ class TestOpenLock(unittest.TestCase):
         r.release()
         set_defaults(race_delay=0)
         r = FileLock(lock_file)
-        with self.assertRaises(SlowSystem):
-            with open(lock_file, "w") as f:
-                f.write("1\ntest_openlock.py\n")
-            r.acquire(timeout=0)
+        with self.assertWarns(UserWarning):
+            with self.assertRaises(SlowSystem):
+                with open(lock_file, "w") as f:
+                    f.write("1\ntest_openlock.py\n")
+                r.acquire(timeout=0)
 
     def test_invalid_option(self):
         with self.assertRaises(InvalidOption) as e:
