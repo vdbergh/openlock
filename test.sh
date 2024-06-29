@@ -3,7 +3,7 @@
 
 cat <<EOF > test.lock
 123
-test.py
+test
 EOF
 
 python test.py &

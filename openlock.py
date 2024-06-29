@@ -183,6 +183,9 @@ class FileLock:
             pass
 
     def __create_lock_file(self, pid, name):
+        if self.lock_file.exists():
+            return False
+
         temp_file = tempfile.NamedTemporaryFile(
             dir=os.path.dirname(self.lock_file), delete=False
         )
