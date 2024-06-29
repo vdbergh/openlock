@@ -8,6 +8,7 @@ import sys
 import tempfile
 import threading
 import time
+import warnings
 from pathlib import Path
 
 __version__ = "1.1.4"
@@ -246,7 +247,7 @@ class FileLock:
                     "'race_delay' parameter "
                     f"(current value: {self.__race_delay:#.2g}, used: {tt-t:#.2g})."
                 )
-                logger.warning(message)
+                warnings.warn(message)
                 if self.__slow_system_exception:
                     raise SlowSystem(message)
             time.sleep(self.__race_delay)
