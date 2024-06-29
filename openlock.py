@@ -89,10 +89,6 @@ class InvalidLockFile(OpenLockException):
     pass
 
 
-class SlowSystem(OpenLockException):
-    pass
-
-
 class InvalidOption(OpenLockException):
     pass
 
@@ -101,7 +97,6 @@ _defaults = {
     "race_delay": 0.2,
     "tries": 2,
     "retry_period": 0.3,
-    "slow_system_exception": False,
 }
 
 
@@ -130,7 +125,6 @@ class FileLock:
         self.__retry_period = _defaults["retry_period"]
         self.__race_delay = _defaults["race_delay"]
         self.__tries = _defaults["tries"]
-        self.__slow_system_exception = _defaults["slow_system_exception"]
         logger.debug(f"{self} created")
 
     def __lock_state(self, verify_pid_valid=True):
@@ -248,8 +242,6 @@ class FileLock:
                     f"(current value: {self.__race_delay:#.2g}, used: {tt-t:#.2g})."
                 )
                 warnings.warn(message)
-                if self.__slow_system_exception:
-                    raise SlowSystem(message)
             time.sleep(self.__race_delay)
             lock_state = self.__lock_state(verify_pid_valid=False)
             logger.debug(f"{self}: {lock_state}")

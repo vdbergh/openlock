@@ -12,7 +12,6 @@ from openlock import (
     InvalidLockFile,
     InvalidOption,
     InvalidRelease,
-    SlowSystem,
     Timeout,
     get_defaults,
     logger,
@@ -38,7 +37,6 @@ def show(mc):
 class TestOpenLock(unittest.TestCase):
     def setUp(self):
         logging.disable(logging.DEBUG)
-        #        warnings.simplefilter("ignore")
         for L in (lock_file, other_lock_file):
             try:
                 os.remove(L)
@@ -133,37 +131,28 @@ class TestOpenLock(unittest.TestCase):
 
     def test_options(self):
         option_keys = set(get_defaults().keys())
-        self.assertTrue(
-            option_keys
-            == {"tries", "retry_period", "race_delay", "slow_system_exception"}
-        )
+        self.assertTrue(option_keys == {"tries", "retry_period", "race_delay"})
         options = {
             "tries": 5,
             "retry_period": 100.0,
             "race_delay": 100,
-            "slow_system_exception": True,
         }
         set_defaults(**options)
         options_ = get_defaults()
         self.assertTrue(options == options_)
         option_keys = set(options_)
-        self.assertTrue(
-            option_keys
-            == {"tries", "retry_period", "race_delay", "slow_system_exception"}
-        )
+        self.assertTrue(option_keys == {"tries", "retry_period", "race_delay"})
 
     def test_slow_system(self):
-        set_defaults(slow_system_exception=True)
         r = FileLock(lock_file)
         r.acquire(timeout=0)
         r.release()
         set_defaults(race_delay=0)
         r = FileLock(lock_file)
         with self.assertWarns(UserWarning):
-            with self.assertRaises(SlowSystem):
-                with open(lock_file, "w") as f:
-                    f.write("1\ntest_openlock.py\n")
-                r.acquire(timeout=0)
+            with open(lock_file, "w") as f:
+                f.write("1\ntest_openlock.py\n")
+            r.acquire(timeout=0)
 
     def test_invalid_option(self):
         with self.assertRaises(InvalidOption) as e:

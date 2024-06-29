@@ -11,7 +11,7 @@ A locking library not depending on inter-process locking primitives in the OS.
 - `FileLock.getpid()`. The PID of the process that holds the lock, if any. Otherwise returns `None`.
 - `FileLock.lock_file`. The name of the lock file.
 - `FileLock.timeout`. The value of the timeout parameter.
-- `openlock.set_defaults(**kw)`. Sets default values for the internal parameters. Currently `tries`, `retry_period`, `race_delay` and `slow_system_exception` with values of `2`, `0.3s`, `0.2s` and `False` respectively.
+- `openlock.set_defaults(**kw)`. Sets default values for the internal parameters. Currently `tries`, `retry_period`, `race_delay` with values of `2`, `0.3s` and `0.2s` respectively.
 - `openlock.get_defaults()`. Returns a dictionary with the default values for the internal parameters.
 
 ## How does it work
