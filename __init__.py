@@ -1,4 +1,5 @@
 from .openlock import (  # noqa: F401
+    Defaults,
     FileLock,
     InvalidLockFile,
     InvalidOption,
