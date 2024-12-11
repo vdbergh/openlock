@@ -12,12 +12,10 @@ import threading
 import time
 import warnings
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-if sys.version_info >= (3, 11):
+if TYPE_CHECKING:
     from typing import TypedDict, Unpack
-else:
-    from typing_extensions import TypedDict, Unpack
 
 __version__ = "1.1.5"
 
@@ -102,17 +100,18 @@ class InvalidOption(OpenLockException):
     pass
 
 
-class LockState(TypedDict, total=False):
-    state: str
-    reason: str
-    pid: int
-    name: str
+if TYPE_CHECKING:
 
+    class LockState(TypedDict, total=False):
+        state: str
+        reason: str
+        pid: int
+        name: str
 
-class Defaults(TypedDict, total=False):
-    race_delay: float
-    tries: int
-    retry_period: float
+    class Defaults(TypedDict, total=False):
+        race_delay: float
+        tries: int
+        retry_period: float
 
 
 _defaults: Defaults = {

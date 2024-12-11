@@ -1,5 +1,6 @@
+from typing import TYPE_CHECKING
+
 from .openlock import (  # noqa: F401
-    Defaults,
     FileLock,
     InvalidLockFile,
     InvalidOption,
@@ -11,3 +12,6 @@ from .openlock import (  # noqa: F401
     logger,
     set_defaults,
 )
+
+if TYPE_CHECKING:
+    from .openlock import Defaults, LockState  # noqa: F401

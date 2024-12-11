@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging  # noqa: F401
 import os
 import platform
@@ -6,10 +8,9 @@ import sys
 import time
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from openlock import (
-    Defaults,
     FileLock,
     InvalidLockFile,
     InvalidOption,
@@ -19,6 +20,9 @@ from openlock import (
     logger,
     set_defaults,
 )
+
+if TYPE_CHECKING:
+    from openlock import Defaults
 
 logging.basicConfig(format="%(asctime)s:%(levelname)s:%(name)s:%(process)s:%(message)s")
 logger.setLevel(logging.DEBUG)
