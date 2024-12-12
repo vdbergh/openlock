@@ -8,6 +8,9 @@ The FileLock object
    :class-doc-from: both
    :members: acquire, release, locked, getpid, lock_file, timeout
 
+Exceptions
+----------
+
 .. autoexception:: openlock.OpenLockException
 
 .. autoexception:: openlock.Timeout

@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 IS_WINDOWS = "windows" in platform.system().lower()
 
 
-def pid_valid_windows(pid: int, name: str) -> bool:
+def _pid_valid_windows(pid: int, name: str) -> bool:
     cmdlet = (
         "(Get-CimInstance Win32_Process " "-Filter 'ProcessId = {}').CommandLine"
     ).format(pid)
@@ -44,7 +44,7 @@ def pid_valid_windows(pid: int, name: str) -> bool:
     return False
 
 
-def pid_valid_posix(pid: int, name: str) -> bool:
+def _pid_valid_posix(pid: int, name: str) -> bool:
     # for busybox these options are undocumented...
     cmd = ["ps", "-f", str(pid)]
 
@@ -73,11 +73,11 @@ def pid_valid_posix(pid: int, name: str) -> bool:
     return False
 
 
-def pid_valid(pid: int, name: str) -> bool:
+def _pid_valid(pid: int, name: str) -> bool:
     if IS_WINDOWS:
-        return pid_valid_windows(pid, name)
+        return _pid_valid_windows(pid, name)
     else:
-        return pid_valid_posix(pid, name)
+        return _pid_valid_posix(pid, name)
 
 
 class OpenLockException(Exception):
@@ -216,7 +216,7 @@ class FileLock:
                 "name": name,
             }
         else:
-            if not pid_valid(pid, name):
+            if not _pid_valid(pid, name):
                 retry = self.__lock_state(verify_pid_valid=False)
                 if retry["state"] == "locked" and (
                     retry["pid"] != pid or retry["name"] != name
