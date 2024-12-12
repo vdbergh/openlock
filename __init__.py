@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+import sys
 
 from .openlock import (  # noqa: F401
     FileLock,
@@ -13,5 +13,5 @@ from .openlock import (  # noqa: F401
     set_defaults,
 )
 
-if TYPE_CHECKING:
+if sys.version_info >= (3, 11):
     from .openlock import Defaults, LockState  # noqa: F401

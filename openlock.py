@@ -12,9 +12,9 @@ import threading
 import time
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-if TYPE_CHECKING:
+if sys.version_info >= (3, 11):
     from typing import TypedDict, Unpack
 
 __version__ = "1.1.5"
@@ -119,7 +119,7 @@ class InvalidOption(OpenLockException):
     pass
 
 
-if TYPE_CHECKING:
+if sys.version_info >= (3, 11):
 
     class LockState(TypedDict, total=False):
         state: str
