@@ -134,6 +134,10 @@ def set_defaults(**kw: Unpack[Defaults]) -> None:
 
 
 class FileLock:
+    """
+    The lock constructor. A :py:class:`openlock.FileLock` objects
+    supports the context manager protocol.
+    """
 
     lock_file: Path
     timeout: float | None
@@ -148,6 +152,12 @@ class FileLock:
         lock_file: str = "openlock.lock",
         timeout: float | None = None,
     ) -> None:
+        """
+        :param lock_file: the underlying file used for locking;
+          the calling process should have read/write access
+        :param timeout: the default for the corresponding argument of
+          :py:meth:`openlock.acquire`
+        """
         self.lock_file = Path(lock_file)
         self.timeout = timeout
         self.__lock = threading.Lock()
