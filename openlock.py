@@ -17,7 +17,7 @@ from typing import Any
 if sys.version_info >= (3, 11):
     from typing import TypedDict, Unpack
 
-__version__ = "1.1.5"
+__version__ = "1.2.0"
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ if sys.version_info >= (3, 11):
         """
         retry_period: float
         """
-        Delay before attempting to acquire a lock.
+        Delay before reattempting to acquire a lock.
         """
 
 

@@ -1,11 +1,3 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 import sys
 from pathlib import Path
 
@@ -16,10 +8,7 @@ add_module_names = False
 project = "openlock"
 copyright = "2024, Michel Van den Bergh"
 author = "Michel Van den Bergh"
-release = "1.1.5"
-
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+release = "2.0.0"
 
 extensions = [
     "sphinx.ext.duration",
@@ -34,15 +23,6 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 html_baseurl = "https://www.cantate.be/openlock"
-
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-# html_theme = 'alabaster'
-# html_theme = 'furo'
-# html_theme = 'press'
-# html_theme = 'insipid'
-
 html_permalinks_icon = "§"
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
