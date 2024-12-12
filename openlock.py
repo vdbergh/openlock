@@ -81,18 +81,33 @@ def pid_valid(pid: int, name: str) -> bool:
 
 
 class OpenLockException(Exception):
+    """
+    Base exception raised by the openlock library.
+    """
     pass
 
 
 class Timeout(OpenLockException):
+    """
+    Raised when the waiting time for acquiring a
+    :py:class:`openlock.FileLock` has expired.
+    """
     pass
 
 
 class InvalidRelease(OpenLockException):
+    """
+    Raised when :py:meth:`openlock.FileLock.release` is called
+    on a lock we do not own.
+    """
     pass
 
 
 class InvalidLockFile(OpenLockException):
+    """
+    Raised when openlock is unable to create a
+    valid lock file in :py:meth:`openlock.FileLock.acquire`.
+    """
     pass
 
 
@@ -140,7 +155,13 @@ class FileLock:
     """
 
     lock_file: Path
+    """
+    The `Path` object representing the lock file.        
+    """
     timeout: float | None
+    """
+    The value of the timeout parameter.
+    """
     __lock: threading.Lock
     __acquired: bool
     __retry_period: float
@@ -300,6 +321,17 @@ class FileLock:
         raise InvalidLockFile("Unable to obtain a valid lock file")
 
     def acquire(self, timeout: float | None = None) -> None:
+        """
+        Attempts to acquires the lock.
+
+        :param timeout: specifies the maximum waiting time in seconds
+          before a :py:exc:`Timeout` exception is raised
+
+        :raises Timeout: raised when the waiting time for acquiring
+          the lock has expired
+        :raises InvalidLockFile: raised when openlock is unable to create a
+          valid lock file
+        """
         if timeout is None:
             timeout = self.timeout
         start_time = time.time()
@@ -315,6 +347,11 @@ class FileLock:
                 time.sleep(self.__retry_period)
 
     def release(self) -> None:
+        """
+        Releases the lock.
+
+        :raises InvalidRelease: raised when we don't own the lock
+        """
         with self.__lock:
             if not self.__acquired:
                 raise InvalidRelease(f"Attempt at releasing {self} which we do not own")
@@ -324,6 +361,9 @@ class FileLock:
             logger.debug(f"{self} released")
 
     def locked(self) -> bool:
+        """
+        True if we hold the lock.
+        """
         with self.__lock:
             if self.__acquired:
                 return True
@@ -331,6 +371,9 @@ class FileLock:
             return lock_state["state"] == "locked"
 
     def getpid(self) -> int | None:
+        """
+        The PID of the process that holds the lock, if any. Otherwise returns `None`.
+        """
         with self.__lock:
             if self.__acquired:
                 return os.getpid()

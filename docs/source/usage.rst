@@ -6,6 +6,15 @@ The FileLock object
 
 .. autoclass:: openlock.FileLock
    :class-doc-from: both
+   :members: acquire, release, locked, getpid, lock_file, timeout
+
+.. autoexception:: openlock.OpenLockException
+
+.. autoexception:: openlock.Timeout
+
+.. autoexception:: openlock.InvalidLockFile
+
+.. autoexception:: openlock.InvalidRelease
 
 
 How does it work
