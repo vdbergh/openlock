@@ -84,6 +84,7 @@ class OpenLockException(Exception):
     """
     Base exception raised by the openlock library.
     """
+
     pass
 
 
@@ -92,6 +93,7 @@ class Timeout(OpenLockException):
     Raised when the waiting time for acquiring a
     :py:class:`openlock.FileLock` has expired.
     """
+
     pass
 
 
@@ -100,6 +102,7 @@ class InvalidRelease(OpenLockException):
     Raised when :py:meth:`openlock.FileLock.release` is called
     on a lock we do not own.
     """
+
     pass
 
 
@@ -108,6 +111,7 @@ class InvalidLockFile(OpenLockException):
     Raised when openlock is unable to create a
     valid lock file in :py:meth:`openlock.FileLock.acquire`.
     """
+
     pass
 
 
@@ -156,7 +160,7 @@ class FileLock:
 
     lock_file: Path
     """
-    The `Path` object representing the lock file.        
+    The `Path` object representing the lock file.
     """
     timeout: float | None
     """
