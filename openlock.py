@@ -116,12 +116,17 @@ class InvalidLockFile(OpenLockException):
 
 
 class InvalidOption(OpenLockException):
+    """
+    Raised when :py:func:`openlock.set_defaults` is used to set
+    a non-existing option.
+    """
+
     pass
 
 
 if sys.version_info >= (3, 11):
 
-    class LockState(TypedDict, total=False):
+    class _LockState(TypedDict, total=False):
         state: str
         reason: str
         pid: int
@@ -154,10 +159,21 @@ _defaults: Defaults = {
 
 
 def get_defaults() -> Defaults:
+    """
+    Get defaults.
+    """
     return copy.copy(_defaults)
 
 
 def set_defaults(**kw: Unpack[Defaults]) -> None:
+    """
+    Set defaults.
+
+    :param kw: default parameters
+
+    :raises InvalidOption: raised when trying to set a non-existing
+      option
+    """
     dk = _defaults.keys()
     for k in kw.keys():
         if k not in dk:
@@ -205,7 +221,7 @@ class FileLock:
         self.__tries = _defaults["tries"]
         logger.debug(f"{self} created")
 
-    def __lock_state(self, verify_pid_valid: bool = True) -> LockState:
+    def __lock_state(self, verify_pid_valid: bool = True) -> _LockState:
         try:
             with open(self.lock_file) as f:
                 s = f.readlines()

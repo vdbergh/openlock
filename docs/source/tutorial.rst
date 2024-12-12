@@ -15,6 +15,8 @@ Installation
 Tutorial
 --------
 
+For this tutorial we consider a simple situation where multiple processes with the same working directory are trying to access a shared resource.
+
 Create the lock.
 
 .. code-block:: python
@@ -33,12 +35,14 @@ Release the lock.
 
   l.release()
 
-Using the context manager protocol.
+Alternatively we may use the context manager protocol.
 
 .. code-block:: python
 
   with FileLock():
     ...
+
+That's it!
 
 
 

@@ -22,6 +22,9 @@ Exceptions
 .. autoexception:: openlock.InvalidRelease
    :show-inheritance:
 
+.. autoexception:: openlock.InvalidOption
+   :show-inheritance:
+
 Options
 -------
 
@@ -30,9 +33,15 @@ Options
    :show-inheritance:
    :members: race_delay, tries, retry_period
 
+.. autofunction:: openlock.set_defaults
 
+.. autofunction:: openlock.get_defaults
+
+Internals
+---------
+		  
 How does it work
-----------------
+^^^^^^^^^^^^^^^^
 
 A valid lock file has two lines of text containing respectively:
 
@@ -50,7 +59,7 @@ To release the lock, the process deletes the lock file and uninstall the exit ha
 In follows from this description that the algorithm is latency free in the common use case where there are no invalid lock files.
 
 Issues
-------
+^^^^^^
 
 There are no known issues in the common use case where there are no invalid lock files. In general the following is true:
 
@@ -59,6 +68,6 @@ There are no known issues in the common use case where there are no invalid lock
 * Since PIDs are only unique over the lifetime of a process, it may be, although it is very unlikely, that the data `(pid, name)` matches a Python process different from the one that created the lock file. In that case the algorithm fails to recognize the lock file as stale.
 
 History
--------
+^^^^^^^
 
 This is a refactored version of the locking algorithm used by the worker for the Fishtest web application https://tests.stockfishchess.org/tests.

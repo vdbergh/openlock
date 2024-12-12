@@ -14,4 +14,4 @@ from .openlock import (  # noqa: F401
 )
 
 if sys.version_info >= (3, 11):
-    from .openlock import Defaults, LockState  # noqa: F401
+    from .openlock import Defaults  # noqa: F401
