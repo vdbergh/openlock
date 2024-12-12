@@ -8,7 +8,7 @@ add_module_names = False
 project = "openlock"
 copyright = "2024, Michel Van den Bergh"
 author = "Michel Van den Bergh"
-release = "2.0.0"
+release = "1.2.0"
 
 extensions = [
     "sphinx.ext.duration",
