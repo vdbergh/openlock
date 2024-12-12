@@ -14,10 +14,21 @@ Exceptions
 .. autoexception:: openlock.OpenLockException
 
 .. autoexception:: openlock.Timeout
+   :show-inheritance:
 
 .. autoexception:: openlock.InvalidLockFile
+   :show-inheritance:
 
 .. autoexception:: openlock.InvalidRelease
+   :show-inheritance:
+
+Options
+-------
+
+.. autoclass:: openlock.Defaults
+   :class-doc-from: both
+   :show-inheritance:
+   :members: race_delay, tries, retry_period
 
 
 How does it work

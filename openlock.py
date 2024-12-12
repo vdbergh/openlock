@@ -128,9 +128,22 @@ if sys.version_info >= (3, 11):
         name: str
 
     class Defaults(TypedDict, total=False):
+        """
+        Default options
+        """
+
         race_delay: float
+        """
+        Delay before we check that we still have the lock file.
+        """
         tries: int
+        """
+        Number of attempts to create a valid lock file.
+        """
         retry_period: float
+        """
+        Delay before attempting to acquire a lock.
+        """
 
 
 _defaults: Defaults = {
