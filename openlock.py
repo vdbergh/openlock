@@ -134,20 +134,20 @@ if sys.version_info >= (3, 11):
 
     class Defaults(TypedDict, total=False):
         """
-        Default options
+        Default options.
         """
 
         race_delay: float
         """
-        Delay before we check that we still have the lock file.
+        delay before we check that we still have the lock file
         """
         tries: int
         """
-        Number of attempts to create a valid lock file.
+        number of attempts to create a valid lock file
         """
         retry_period: float
         """
-        Delay before reattempting to acquire a lock.
+        delay before reattempting to acquire a lock
         """
 
 
@@ -183,7 +183,7 @@ def set_defaults(**kw: Unpack[Defaults]) -> None:
 
 class FileLock:
     """
-    The lock constructor. A :py:class:`openlock.FileLock` objects
+    The lock constructor. An :py:class:`openlock.FileLock` object
     supports the context manager protocol.
     """
 

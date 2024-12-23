@@ -54,9 +54,9 @@ A process that seeks to acquire a lock first atomically tries to create a new lo
 
 Once the lock is acquired the process installs an exit handler to remove the lock file on exit.
 
-To release the lock, the process deletes the lock file and uninstall the exit handler.
+To release the lock, the process deletes the lock file and uninstalls the exit handler.
 
-In follows from this description that the algorithm is latency free in the common use case where there are no invalid lock files.
+It follows from this description that the algorithm is latency free in the common use case where there are no invalid lock files.
 
 Issues
 ^^^^^^

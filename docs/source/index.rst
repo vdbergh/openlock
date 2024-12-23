@@ -1,7 +1,7 @@
 Welcome to openlock's documentation
 ===================================
 
-**openlock** is a Python locking library not depending on inter-process locking primitives in the OS
+**openlock** is a Python locking library not depending on inter-process locking primitives in the OS.
 
 .. toctree::
    :maxdepth: 2
