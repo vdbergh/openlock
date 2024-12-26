@@ -8,7 +8,7 @@ import sys
 import time
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from openlock import (
     FileLock,
@@ -21,7 +21,7 @@ from openlock import (
     set_defaults,
 )
 
-if TYPE_CHECKING:
+if sys.version_info >= (3, 11):
     from openlock import Defaults
 
 logging.basicConfig(format="%(asctime)s:%(levelname)s:%(name)s:%(process)s:%(message)s")
