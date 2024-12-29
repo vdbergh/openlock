@@ -17,7 +17,7 @@ from typing import Any
 if sys.version_info >= (3, 11):
     from typing import TypedDict, Unpack
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 logger = logging.getLogger(__name__)
 
