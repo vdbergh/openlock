@@ -55,14 +55,16 @@ def _pid_valid_posix(pid: int, name: str) -> bool:
         bufsize=1,
     ) as p:
         assert p.stdout is not None
+        read_header = True
         for line in iter(p.stdout.readline, ""):
             line = line.lower()
             line_ = line.split()
             if len(line_) == 0:
                 continue
-            if "pid" in line_:
+            if "pid" in line_ and read_header:
                 # header
                 index = line_.index("pid")
+                read_header = False
                 continue
             try:
                 pid_ = int(line_[index])
