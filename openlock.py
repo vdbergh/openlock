@@ -205,7 +205,7 @@ class FileLock:
 
     def __init__(
         self,
-        lock_file: str = "openlock.lock",
+        lock_file: str | Path = "openlock.lock",
         timeout: float | None = None,
     ) -> None:
         """
